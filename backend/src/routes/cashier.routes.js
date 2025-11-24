@@ -5,7 +5,8 @@ import { requireRole } from '../middleware/rbac.js';
 import {
   getPendingPayments,
   processTransaction,
-  getTransactionHistory
+  getTransactionHistory,
+  getCompletedPatients
 } from '../controllers/cashier.controller.js';
 
 const router = express.Router();
@@ -14,6 +15,7 @@ router.use(authenticateToken);
 router.use(requireRole(['kasir', 'admin']));
 
 router.get('/pending', getPendingPayments);
+router.get('/completed-patients', getCompletedPatients);
 router.post('/transactions', processTransaction);
 router.get('/transactions', getTransactionHistory);
 

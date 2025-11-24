@@ -1,7 +1,10 @@
 // frontend/src/pages/auth/Register.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext.jsx';
 import { authService } from '../../services/patientService.js';
+import { getRoleRoute } from '../../utils/getRoleRoute.js';
+import api from '../../services/api.js';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -9,11 +12,21 @@ export default function Register() {
     email: '',
     password: '',
     phone: '',
-    address: ''
+    address: '',
+    role: 'pasien'
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
+
+  const roles = [
+    { value: 'pasien', label: 'Pasien' },
+    { value: 'dokter', label: 'Dokter' },
+    { value: 'apoteker', label: 'Apoteker' },
+    { value: 'kasir', label: 'Kasir' },
+    { value: 'admin', label: 'Admin' }
+  ];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,12 +39,25 @@ export default function Register() {
     setLoading(true);
 
     try {
-      await authService.register({
-        ...formData,
-        role: 'pasien'
-      });
-      alert('Pendaftaran berhasil! Silakan login.');
-      navigate('/login');
+      const res = await authService.register(formData);
+      // Jika registrasi berhasil dan ada token, langsung login
+      if (res.data.token && res.data.user) {
+        // Simpan token
+        localStorage.setItem('token', res.data.token);
+        api.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
+        
+        // Update auth context dengan user data
+        // Redirect berdasarkan role
+        const route = getRoleRoute(res.data.user.role);
+        alert('Pendaftaran berhasil! Anda akan diarahkan ke dashboard.');
+        navigate(route);
+        // Reload page untuk update auth context
+        window.location.reload();
+      } else {
+        // Jika tidak ada token, redirect ke login
+        alert('Pendaftaran berhasil! Silakan login.');
+        navigate('/login');
+      }
     } catch (err) {
       setError(err.response?.data?.error || 'Pendaftaran gagal.');
     } finally {
@@ -43,8 +69,8 @@ export default function Register() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-primary">Daftar Akun Pasien</h1>
-          <p className="text-gray-600">Buat akun untuk layanan kesehatan lebih mudah</p>
+          <h1 className="text-2xl font-bold text-primary">Daftar Akun Baru</h1>
+          <p className="text-gray-600">Buat akun sesuai dengan role Anda</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -70,6 +96,24 @@ export default function Register() {
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
               required
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+            <select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
+              required
+            >
+              {roles.map((role) => (
+                <option key={role.value} value={role.value}>
+                  {role.label}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-gray-500 mt-1">Pilih role sesuai dengan posisi Anda</p>
           </div>
 
           <div>

@@ -1,6 +1,6 @@
 import db from '../models/Index.js';
 import { Op } from 'sequelize';
-import { generateQueueNumber } from '../utils/queueGenerator.js';
+import bcrypt from 'bcrypt';
 
 const { Queue, Patient, User, Staff } = db;
 
@@ -16,9 +16,26 @@ export const createQueue = async (req, res) => {
     
     if (!patient) return res.status(404).json({ error: 'Pasien tidak ditemukan.' });
 
-    const queueNumber = generateQueueNumber();
+    // Check if patient already has an active queue
+    const existingQueue = await Queue.findOne({
+      where: {
+        patient_id: patientId,
+        status: { [Op.in]: ['menunggu', 'dipanggil'] }
+      }
+    });
+
+    if (existingQueue) {
+      return res.status(400).json({ 
+        error: 'Pasien sudah memiliki antrian aktif.' 
+      });
+    }
+
+    // Generate sequential queue number
+    const { generateQueueNumber } = await import('../utils/queueGenerator.js');
+    const queueNumber = await generateQueueNumber();
+
     const queue = await Queue.create({
-      queue_number: queueNumber,
+      queue_number: queueNumber.toString(),
       patient_id: patientId,
       receptionist_id: receptionistId,
       status: 'menunggu'
@@ -87,16 +104,23 @@ export const updateQueueStatus = async (req, res) => {
 };
 
 export const registerPatient = async (req, res) => {
-  const { name, email, phone, address, medical_history, blood_type } = req.body;
+  const { name, email, phone, address, medical_history, blood_type, emergency_contact, password } = req.body;
 
   try {
+    if (!name || !email) {
+      return res.status(400).json({ error: 'Nama dan email harus diisi.' });
+    }
+
     const existing = await User.findOne({ where: { email } });
     if (existing) return res.status(400).json({ error: 'Email sudah terdaftar.' });
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password || 'password123', 12);
 
     const user = await User.create({
       name,
       email,
-      password: 'default123', // Default password
+      password: hashedPassword,
       phone,
       address,
       role: 'pasien'
@@ -104,15 +128,23 @@ export const registerPatient = async (req, res) => {
 
     await Patient.create({
       user_id: user.id,
-      medical_history,
-      blood_type
+      medical_history: medical_history || null,
+      blood_type: blood_type || null,
+      emergency_contact: emergency_contact || null
+    });
+
+    // Fetch created patient with user data
+    const patient = await Patient.findOne({
+      where: { user_id: user.id },
+      include: [{ model: User, as: 'user', attributes: { exclude: ['password'] } }]
     });
 
     res.status(201).json({
       message: 'Pasien berhasil didaftarkan.',
-      user: { id: user.id, name: user.name, email: user.email, role: user.role }
+      patient
     });
   } catch (err) {
+    console.error('Error registering patient:', err);
     res.status(500).json({ error: err.message });
   }
 };

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import { useNavigate } from 'react-router-dom';
+import { getRoleRoute } from '../../utils/getRoleRoute.js';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -16,8 +17,10 @@ export default function Login() {
     setLoading(true);
 
     try {
-      await login(email, password);
-      navigate('/');
+      const user = await login(email, password);
+      // Redirect berdasarkan role user
+      const route = getRoleRoute(user.role);
+      navigate(route);
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Login gagal.');
     } finally {
@@ -77,15 +80,9 @@ export default function Login() {
           <p className="text-gray-600">
             Belum punya akun?{' '}
             <a href="/register" className="text-blue-600 font-medium hover:underline">
-              Daftar sebagai Pasien
+              Daftar
             </a>
           </p>
-        </div>
-
-        <div className="mt-6 p-4 bg-gray-50 rounded-md text-sm text-gray-600">
-          <p className="font-medium mb-2">Demo Account:</p>
-          <p>Email: admin@klinik.com</p>
-          <p>Password: admin123</p>
         </div>
       </div>
     </div>

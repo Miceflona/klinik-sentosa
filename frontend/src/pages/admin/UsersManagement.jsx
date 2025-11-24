@@ -1,8 +1,8 @@
 // frontend/src/pages/admin/UsersManagement.jsx
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { adminService } from '../../services/patientService.js';
 
-const ROLES = ['admin', 'resepsionis', 'dokter', 'apoteker', 'kasir'];
+const ROLES = ['admin', 'dokter', 'apoteker', 'kasir'];
 
 export default function UsersManagement() {
   const [users, setUsers] = useState([]);
@@ -22,10 +22,11 @@ export default function UsersManagement() {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get('/api/admin/users');
-      setUsers(res.data);
+      const res = await adminService.getAllUsers();
+      setUsers(Array.isArray(res.data) ? res.data : res.data?.users || []);
     } catch (err) {
-      alert('Gagal memuat data user.');
+      console.error('Error fetching users:', err);
+      alert(err.response?.data?.error || 'Gagal memuat data user.');
     }
   };
 
@@ -40,15 +41,16 @@ export default function UsersManagement() {
 
     try {
       if (editingId) {
-        await axios.put(`/api/admin/users/${editingId}`, form);
-        setUsers(prev => prev.map(u => u.id === editingId ? { ...u, ...form } : u));
+        await adminService.updateUser(editingId, form);
+        alert('User berhasil diperbarui!');
       } else {
-        const res = await axios.post('/api/admin/users', { ...form, password: 'default123' });
-        setUsers([...users, res.data]);
+        await adminService.createUser({ ...form, password: 'default123' });
+        alert('User berhasil dibuat!');
       }
       resetForm();
       fetchUsers();
     } catch (err) {
+      console.error('Error saving user:', err);
       alert(err.response?.data?.error || 'Gagal menyimpan user.');
     } finally {
       setLoading(false);
@@ -69,10 +71,12 @@ export default function UsersManagement() {
   const handleDelete = async (id) => {
     if (!window.confirm('Hapus user ini?')) return;
     try {
-      await axios.delete(`/api/admin/users/${id}`);
-      setUsers(users.filter(u => u.id !== id));
+      await adminService.deleteUser(id);
+      alert('User berhasil dihapus!');
+      fetchUsers();
     } catch (err) {
-      alert('Gagal menghapus user.');
+      console.error('Error deleting user:', err);
+      alert(err.response?.data?.error || 'Gagal menghapus user.');
     }
   };
 
@@ -90,18 +94,24 @@ export default function UsersManagement() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800">Manajemen User</h1>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800">Manajemen User</h1>
+          <p className="text-gray-600 mt-1">Kelola user untuk role: Admin, Dokter, Apoteker, Kasir</p>
+        </div>
         <button
           onClick={resetForm}
-          className="bg-primary text-white px-4 py-2 rounded-md hover:bg-blue-700"
+          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium flex items-center space-x-2"
         >
-          + Tambah User
+          <span>➕</span>
+          <span>Tambah User</span>
         </button>
       </div>
 
       {/* Form */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold mb-4">{editingId ? 'Edit User' : 'Tambah User Baru'}</h2>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 className="text-xl font-semibold mb-4 text-gray-800">
+          {editingId ? '✏️ Edit User' : '➕ Tambah User Baru'}
+        </h2>
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm text-gray-700 mb-1">Nama</label>
@@ -183,8 +193,12 @@ export default function UsersManagement() {
       </div>
 
       {/* Tabel */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="p-4 border-b border-gray-200 bg-gray-50">
+          <h3 className="text-lg font-semibold text-gray-800">Daftar User</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
@@ -229,6 +243,12 @@ export default function UsersManagement() {
             ))}
           </tbody>
         </table>
+        </div>
+        {users.length === 0 && (
+          <div className="p-8 text-center text-gray-500">
+            Belum ada data user
+          </div>
+        )}
       </div>
     </div>
   );

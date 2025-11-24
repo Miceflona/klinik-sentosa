@@ -6,29 +6,35 @@ const menuConfig = {
   pasien: [
     { label: 'Dashboard', path: '/dashboard', icon: '🏠' },
     { label: 'Profil', path: '/dashboard/profile', icon: '👤' },
-    { label: 'Riwayat', path: '/dashboard/history', icon: '📜' }
-  ],
-  resepsionis: [
-    { label: 'Antrian Hari Ini', path: '/receptionist', icon: '📋' },
-    { label: 'Kelola Pasien', path: '/receptionist/patients', icon: '👥' }
+    { label: 'Riwayat', path: '/dashboard/history', icon: '📜' },
+    { label: 'Status Antrian', path: '/dashboard/queue', icon: '🎫' },
+    { label: 'Ingin Melakukan Pemeriksaan', path: '/dashboard/register-examination', icon: '🏥' }
   ],
   dokter: [
-    { label: 'Antrian Pasien', path: '/doctor', icon: '👨‍⚕️' },
-    { label: 'Riwayat Pemeriksaan', path: '/doctor/history', icon: '📊' }
+    { label: 'Daftar Antrian Pasien', path: '/doctor', icon: '👨‍⚕️' },
+    { label: 'Detail Data Pasien', path: '/doctor/patients', icon: '👤' },
+    { label: 'Buat Resep', path: '/doctor/prescription', icon: '💊' },
+    { label: 'Riwayat Medis Pasien', path: '/doctor/history', icon: '📋' },
+    { label: 'Update Status Pemeriksaan', path: '/doctor/examinations', icon: '🔄' },
+    { label: 'Histori Resep', path: '/doctor/prescriptions', icon: '📜' }
   ],
   apoteker: [
     { label: 'Daftar Resep', path: '/pharmacist', icon: '💊' },
-    { label: 'Kelola Obat', path: '/pharmacist/medicines', icon: '📦' }
+    { label: 'Kelola Obat', path: '/pharmacist/medicines', icon: '📦' },
+    { label: 'Riwayat Pengeluaran', path: '/pharmacist/history', icon: '📋' }
   ],
   kasir: [
-    { label: 'Pembayaran', path: '/cashier', icon: '💰' },
-    { label: 'Riwayat Transaksi', path: '/cashier/history', icon: '🧾' }
+    { label: 'Daftar Pembayaran', path: '/cashier', icon: '💰' },
+    { label: 'Riwayat Pembayaran', path: '/cashier/history', icon: '🧾' },
+    { label: 'Laporan Transaksi', path: '/cashier/report', icon: '📊' }
   ],
   admin: [
     { label: 'Dashboard', path: '/admin', icon: '📊' },
-    { label: 'Manajemen User', path: '/admin/users', icon: '👥' },
+    { label: 'Manajemen Pasien', path: '/admin/patients', icon: '👥' },
+    { label: 'Manajemen User', path: '/admin/users', icon: '👤' },
     { label: 'Manajemen Obat', path: '/admin/medicines', icon: '💊' },
-    { label: 'Laporan', path: '/admin/reports', icon: '📄' }
+    { label: 'Pemeriksaan & Resep', path: '/admin/examinations', icon: '🏥' },
+    { label: 'Transaksi & Laporan', path: '/admin/reports', icon: '📄' }
   ]
 };
 
