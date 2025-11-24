@@ -130,76 +130,116 @@ export default function PatientQueue() {
         </div>
       )}
 
-      {/* Queue List */}
+      {/* Queue Table */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="p-6 border-b border-gray-200 bg-gray-50">
-              <h2 className="text-xl font-semibold text-gray-800">Pasien Menunggu</h2>
+              <h2 className="text-xl font-semibold text-gray-800">Daftar Antrian Pasien</h2>
               <p className="text-sm text-gray-600 mt-1">{queues.length} pasien dalam antrian</p>
             </div>
 
             {queues.length === 0 ? (
               <div className="p-12 text-center">
                 <div className="text-6xl mb-4">👨‍⚕️</div>
-                <p className="text-gray-600 text-lg">Tidak ada pasien menunggu</p>
-                <p className="text-gray-500 text-sm mt-2">Antrian pasien akan muncul di sini</p>
+                <p className="text-gray-600 text-lg">Tidak ada pasien dalam antrian</p>
+                <p className="text-gray-500 text-sm mt-2">Antrian pasien akan muncul di sini setelah pasien mendaftar</p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-200">
-                {queues.map((queue) => (
-                  <div
-                    key={queue.id}
-                    className={`p-6 hover:bg-gray-50 transition ${
-                      selectedQueue?.id === queue.id ? 'bg-blue-50 border-l-4 border-blue-600' : ''
-                    }`}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <span className="text-2xl font-bold text-blue-600">
+              <div className="overflow-x-auto">
+                <table className="w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                        No
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Nomor Antrian
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[180px]">
+                        Nama Pasien
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[130px]">
+                        No. HP
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">
+                        Waktu Daftar
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                        Status
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
+                        Aksi
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {queues.map((queue, index) => (
+                      <tr
+                        key={queue.id}
+                        className={`hover:bg-gray-50 transition ${
+                          selectedQueue?.id === queue.id ? 'bg-blue-50' : ''
+                        }`}
+                      >
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">{queue.position || index + 1}</div>
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <div className="text-lg font-bold text-blue-600">
                             {queue.queue_number}
-                          </span>
-                          <h3 className="text-lg font-semibold text-gray-800">
+                          </div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="text-sm font-medium text-gray-900">
                             {queue.patient?.user?.name || queue.patient_name || 'Pasien'}
-                          </h3>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-600">
+                            {queue.patient?.user?.phone || '-'}
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-600">
+                            {queue.createdAt
+                              ? new Date(queue.createdAt).toLocaleString('id-ID', {
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })
+                              : queue.created_at
+                              ? new Date(queue.created_at).toLocaleString('id-ID', {
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })
+                              : '-'}
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap">
                           <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(queue.status)}`}>
                             {getStatusLabel(queue.status)}
                           </span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
-                          <div>
-                            <span className="font-medium">Waktu:</span>{' '}
-                            {queue.createdAt
-                              ? new Date(queue.createdAt).toLocaleString('id-ID')
-                              : queue.created_at
-                              ? new Date(queue.created_at).toLocaleString('id-ID')
-                              : '-'}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => handleViewPatientDetail(queue)}
+                              className="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-xs font-medium"
+                            >
+                              👁️ Detail
+                            </button>
+                            <button
+                              onClick={() => handleSelectQueue(queue)}
+                              className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                              disabled={queue.status === 'selesai'}
+                            >
+                              🩺 Periksa
+                            </button>
                           </div>
-                          <div>
-                            <span className="font-medium">No. HP:</span>{' '}
-                            {queue.patient?.user?.phone || '-'}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex space-x-2 ml-4">
-                        <button
-                          onClick={() => handleViewPatientDetail(queue)}
-                          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-medium"
-                        >
-                          👁️ Detail
-                        </button>
-                        <button
-                          onClick={() => handleSelectQueue(queue)}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
-                          disabled={queue.status === 'selesai'}
-                        >
-                          🩺 Periksa
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
