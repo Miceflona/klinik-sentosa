@@ -13,10 +13,8 @@ const menuConfig = {
   dokter: [
     { label: 'Daftar Antrian Pasien', path: '/doctor', icon: '👨‍⚕️' },
     { label: 'Detail Data Pasien', path: '/doctor/patients', icon: '👤' },
-    { label: 'Buat Resep', path: '/doctor/prescription', icon: '💊' },
     { label: 'Riwayat Medis Pasien', path: '/doctor/history', icon: '📋' },
-    { label: 'Update Status Pemeriksaan', path: '/doctor/examinations', icon: '🔄' },
-    { label: 'Histori Resep', path: '/doctor/prescriptions', icon: '📜' }
+    { label: 'Update Status Pemeriksaan', path: '/doctor/examinations', icon: '🔄' }
   ],
   apoteker: [
     { label: 'Daftar Resep', path: '/pharmacist', icon: '💊' },
@@ -72,13 +70,6 @@ export default function Sidebar() {
           ))}
         </ul>
       </nav>
-
-      <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-gray-50">
-        <p className="text-xs text-gray-600 text-center">
-          🏥 Klinik Sentosa v1.0<br/>
-          Sistem Manajemen Klinik
-        </p>
-      </div>
     </aside>
   );
 }

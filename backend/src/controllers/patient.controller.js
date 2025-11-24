@@ -1,7 +1,7 @@
 import db from '../models/Index.js';
 import { Op } from 'sequelize';
 
-const { Patient, User, Queue, MedicalRecord, Staff } = db;
+const { Patient, User, Queue, MedicalRecord, Staff, Prescription, PrescriptionItem, Medicine } = db;
 
 export const getPatientProfile = async (req, res) => {
   try {
@@ -72,6 +72,19 @@ export const getPatientVisits = async (req, res) => {
             as: 'user',
             attributes: ['id', 'name']
           }]
+        },
+        {
+          model: Prescription,
+          as: 'prescription',
+          include: [{
+            model: PrescriptionItem,
+            as: 'items',
+            include: [{
+              model: Medicine,
+              as: 'medicine',
+              attributes: ['id', 'name', 'dosage']
+            }]
+          }]
         }
       ],
       order: [['createdAt', 'DESC']]
@@ -95,6 +108,17 @@ export const getPatientVisits = async (req, res) => {
         id: visit.queue.id,
         queue_number: visit.queue.queue_number,
         status: visit.queue.status
+      } : null,
+      prescription: visit.prescription ? {
+        id: visit.prescription.id,
+        status: visit.prescription.status,
+        items: visit.prescription.items?.map(item => ({
+          id: item.id,
+          medicine_name: item.medicine?.name || '-',
+          medicine_dosage: item.medicine?.dosage || '-',
+          quantity: item.quantity,
+          dosage_instruction: item.dosage_instruction
+        })) || []
       } : null
     }));
 

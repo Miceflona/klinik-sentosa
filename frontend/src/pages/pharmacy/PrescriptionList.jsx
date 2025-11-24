@@ -117,7 +117,12 @@ export default function PrescriptionList() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Daftar Resep</h1>
-          <p className="text-gray-600 mt-1">Validasi dan serahkan obat ke pasien</p>
+          <p className="text-gray-600 mt-1">
+            Resep yang dikirimkan oleh dokter - Validasi dan serahkan obat ke pasien
+          </p>
+          <p className="text-sm text-gray-500 mt-1">
+            Total: {prescriptions.length} resep | Menunggu: {prescriptions.filter(p => p.status === 'menunggu').length} | Disetujui: {prescriptions.filter(p => p.status === 'disetujui').length}
+          </p>
         </div>
         <button
           onClick={fetchPrescriptions}
@@ -186,7 +191,13 @@ export default function PrescriptionList() {
                     <div>
                       <span className="font-medium">Tanggal:</span>{' '}
                       {prescription.createdAt
-                        ? new Date(prescription.createdAt).toLocaleDateString('id-ID')
+                        ? new Date(prescription.createdAt).toLocaleString('id-ID', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })
                         : '-'}
                     </div>
                     <div>
@@ -228,36 +239,119 @@ export default function PrescriptionList() {
               </div>
             </div>
             <div className="p-6 space-y-6">
-              {/* Patient Info */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="font-semibold text-gray-800 mb-2">Informasi Pasien</h3>
-                <div className="grid grid-cols-2 gap-2 text-sm">
+              {/* Patient Info - Detailed */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-5 border border-blue-200">
+                <h3 className="font-semibold text-gray-800 mb-4 text-lg flex items-center">
+                  <span className="mr-2">👤</span> Informasi Pasien
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-600">Nama:</span>{' '}
-                    <span className="font-medium">
+                    <span className="text-gray-600 block mb-1">Nama Lengkap:</span>
+                    <span className="font-medium text-gray-800">
                       {selectedPrescription.medical_record?.patient?.user?.name || '-'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-gray-600">Dokter:</span>{' '}
-                    <span className="font-medium">
+                    <span className="text-gray-600 block mb-1">Email:</span>
+                    <span className="font-medium text-gray-800">
+                      {selectedPrescription.medical_record?.patient?.user?.email || '-'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600 block mb-1">No. HP:</span>
+                    <span className="font-medium text-gray-800">
+                      {selectedPrescription.medical_record?.patient?.user?.phone || '-'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600 block mb-1">Alamat:</span>
+                    <span className="font-medium text-gray-800">
+                      {selectedPrescription.medical_record?.patient?.user?.address || '-'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600 block mb-1">Golongan Darah:</span>
+                    <span className="font-medium text-gray-800">
+                      {selectedPrescription.medical_record?.patient?.blood_type || '-'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600 block mb-1">Kontak Darurat:</span>
+                    <span className="font-medium text-gray-800">
+                      {selectedPrescription.medical_record?.patient?.emergency_contact || '-'}
+                    </span>
+                  </div>
+                </div>
+                {selectedPrescription.medical_record?.patient?.medical_history && (
+                  <div className="mt-4 pt-4 border-t border-blue-200">
+                    <span className="text-gray-600 block mb-1">Riwayat Medis:</span>
+                    <span className="text-gray-800 text-sm">
+                      {selectedPrescription.medical_record.patient.medical_history}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Doctor & Examination Info */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="font-semibold text-gray-800 mb-3 text-lg flex items-center">
+                  <span className="mr-2">🩺</span> Informasi Pemeriksaan
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-600 block mb-1">Dokter:</span>
+                    <span className="font-medium text-gray-800">
                       {selectedPrescription.medical_record?.doctor?.user?.name || '-'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-gray-600">Diagnosa:</span>{' '}
-                    <span className="font-medium">
+                    <span className="text-gray-600 block mb-1">Email Dokter:</span>
+                    <span className="font-medium text-gray-800">
+                      {selectedPrescription.medical_record?.doctor?.user?.email || '-'}
+                    </span>
+                  </div>
+                  <div className="md:col-span-2">
+                    <span className="text-gray-600 block mb-1">Keluhan:</span>
+                    <span className="font-medium text-gray-800">
+                      {selectedPrescription.medical_record?.complaint || '-'}
+                    </span>
+                  </div>
+                  <div className="md:col-span-2">
+                    <span className="text-gray-600 block mb-1">Diagnosa:</span>
+                    <span className="font-medium text-gray-800">
                       {selectedPrescription.medical_record?.diagnosis || '-'}
                     </span>
                   </div>
+                  {selectedPrescription.medical_record?.notes && (
+                    <div className="md:col-span-2">
+                      <span className="text-gray-600 block mb-1">Catatan Dokter:</span>
+                      <span className="font-medium text-gray-800">
+                        {selectedPrescription.medical_record.notes}
+                      </span>
+                    </div>
+                  )}
                   <div>
-                    <span className="text-gray-600">Status:</span>{' '}
+                    <span className="text-gray-600 block mb-1">Status Resep:</span>
                     <span
-                      className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(
+                      className={`px-3 py-1 rounded-full text-xs font-medium inline-block ${getStatusColor(
                         selectedPrescription.status
                       )}`}
                     >
                       {getStatusLabel(selectedPrescription.status)}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600 block mb-1">Tanggal Resep:</span>
+                    <span className="font-medium text-gray-800">
+                      {selectedPrescription.createdAt
+                        ? new Date(selectedPrescription.createdAt).toLocaleString('id-ID', {
+                            day: '2-digit',
+                            month: 'long',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })
+                        : '-'}
                     </span>
                   </div>
                 </div>

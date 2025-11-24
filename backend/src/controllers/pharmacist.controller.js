@@ -1,7 +1,7 @@
 import db from '../models/Index.js';
 import { Op } from 'sequelize';
 
-const { Prescription, PrescriptionItem, Medicine, MedicalRecord, Patient, User } = db;
+const { Prescription, PrescriptionItem, Medicine, MedicalRecord, Patient, User, Staff } = db;
 
 export const getPrescriptions = async (req, res) => {
   try {
@@ -14,7 +14,17 @@ export const getPrescriptions = async (req, res) => {
             {
               model: Patient,
               as: 'patient',
-              include: [{ model: User, as: 'user' }]
+              attributes: ['id', 'user_id', 'medical_history', 'blood_type', 'emergency_contact', 'createdAt', 'updatedAt'],
+              include: [{ 
+                model: User, 
+                as: 'user',
+                attributes: { exclude: ['password'] } // Include all user fields except password
+              }]
+            },
+            {
+              model: Staff,
+              as: 'doctor',
+              include: [{ model: User, as: 'user', attributes: ['id', 'name', 'email'] }]
             }
           ]
         },
@@ -29,6 +39,7 @@ export const getPrescriptions = async (req, res) => {
 
     res.json({ prescriptions });
   } catch (err) {
+    console.error('Error fetching prescriptions:', err);
     res.status(500).json({ error: err.message });
   }
 };

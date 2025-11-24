@@ -118,6 +118,53 @@ export default function History() {
                   </p>
                 </div>
               )}
+
+              {visit.prescription && (
+                <div className="mt-4 pt-4 border-t">
+                  <h4 className="font-medium text-gray-700 mb-2">💊 Resep Obat</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        visit.prescription.status === 'menunggu' ? 'bg-yellow-100 text-yellow-800' :
+                        visit.prescription.status === 'disetujui' ? 'bg-green-100 text-green-800' :
+                        visit.prescription.status === 'diberikan' ? 'bg-blue-100 text-blue-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {visit.prescription.status === 'menunggu' ? '⏳ Menunggu Validasi' :
+                         visit.prescription.status === 'disetujui' ? '✅ Disetujui' :
+                         visit.prescription.status === 'diberikan' ? '📦 Sudah Diberikan' :
+                         '❌ Ditolak'}
+                      </span>
+                    </div>
+                    {visit.prescription.items && visit.prescription.items.length > 0 ? (
+                      <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+                        {visit.prescription.items.map((item, idx) => (
+                          <div key={idx} className="text-sm text-gray-700 border-b border-gray-200 pb-2 last:border-0 last:pb-0">
+                            <p className="font-medium">
+                              {item.medicine_name} ({item.medicine_dosage})
+                            </p>
+                            <p className="text-xs text-gray-600">
+                              Jumlah: {item.quantity} | {item.dosage_instruction}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500">Tidak ada item resep</p>
+                    )}
+                    {visit.prescription.status === 'disetujui' && (
+                      <p className="text-xs text-green-600 mt-2">
+                        ✅ Resep sudah disetujui apoteker. Silakan ambil obat di apotek.
+                      </p>
+                    )}
+                    {visit.prescription.status === 'diberikan' && (
+                      <p className="text-xs text-blue-600 mt-2">
+                        📦 Obat sudah diberikan. Terima kasih!
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>
