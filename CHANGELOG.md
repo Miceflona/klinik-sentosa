@@ -1,602 +1,577 @@
-# 📋 LAPORAN PERBAIKAN LENGKAP - SISTEM INFORMASI KLINIK SENTOSA
+# 📝 Changelog - Perubahan pada Project Klinik Sentosa
 
-**Tanggal**: November 24, 2025  
-**Status**: ✅ SELESAI - SIAP PRODUCTION  
-**Version**: 1.0.0
+Dokumentasi lengkap semua perubahan yang dilakukan untuk memperbaiki dan menyempurnakan project.
 
 ---
 
-## 🎯 RINGKASAN PERBAIKAN
+## 🗓️ Tanggal: 24 November 2025
 
-Sistem Informasi Klinik Sentosa telah diperbaiki dan disempurnakan dari atas ke bawah (top-to-bottom). Seluruh fitur telah diintegrasikan dengan benar antara frontend dan backend, dengan struktur kode yang clean dan best practices yang diikuti.
+### 🔧 Perbaikan Frontend
 
-### Statistik Perbaikan:
-- **Files Modified**: 35+
-- **Files Created**: 8
-- **Controllers Fixed/Created**: 6
-- **API Endpoints Fixed**: 50+
-- **UI Pages Fixed**: 6
+#### 1. **File: `frontend/index.html`** ✨ DIBUAT BARU
+**Masalah:** File `index.html` tidak ada, menyebabkan error 404 saat akses frontend.
 
----
+**Perubahan:**
+- Membuat file `index.html` baru di folder `frontend/`
+- Menambahkan struktur HTML dasar dengan React root
+- Mengimpor `main.jsx` sebagai entry point
 
-## ✨ PERBAIKAN BACKEND (Express + Node.js)
-
-### 1. **Database Models** ✅
-
-**Status**: Semua models di-standardisasi dan di-fix
-
-**File yang Diperbaiki:**
-- `src/models/User.js` - Diubah dari format Sequelize standalone ke factory pattern
-- `src/models/Patient.js` - ✅ OK
-- `src/models/Staff.js` - ✅ OK
-- `src/models/Medicine.js` - ✅ OK
-- `src/models/Queue.js` - ✅ OK
-- `src/models/MedicalRecord.js` - ✅ OK
-- `src/models/Prescription.js` - ✅ OK
-- `src/models/PrescriptionItem.js` - ✅ OK
-- `src/models/Transaction.js` - ✅ OK
-
-**File Baru:**
-- `src/models/Doctor.js` - Created (sebelumnya kosong)
-- `src/models/Index.js` - REPLACED dengan implementasi yang benar
-
-**Masalah yang Diperbaiki:**
-- Model diimpor dengan benar melalui Index.js
-- Asosiasi (relationship) antar model sudah benar
-- Semua models menggunakan factory pattern yang konsisten
-
----
-
-### 2. **Controllers** ✅
-
-**Status**: Semua controllers di-lengkapi dan diperbaiki
-
-**Files Created:**
-- `src/controllers/patient.controller.js` - ✅ NEW (before: missing)
-- `src/controllers/doctor.controller.js` - ✅ NEW (before: missing)
-- `src/controllers/pharmacist.controller.js` - ✅ NEW (before: missing)
-- `src/controllers/cashier.controller.js` - ✅ NEW (before: missing)
-- `src/controllers/admin.controller.js` - ✅ NEW (before: missing)
-
-**Files Fixed:**
-- `src/controllers/auth.controller.js` - Added getProfile() dan logout() endpoints
-- `src/controllers/receptionist.controller.js` - Fixed import `Op`, added functions
-- `src/routes/report.controller.js` - Moved to correct location and fixed
-
-**Masalah yang Diperbaiki:**
-- Import model yang benar dari Index.js
-- Semua function dengan error handling
-- Response JSON yang konsisten: `{ message: '', data: ... }`
-- Sequelize Op import untuk complex queries
-
----
-
-### 3. **Routes** ✅
-
-**Status**: Semua routes di-update dan di-lengkapi
-
-**Files Modified:**
-- `src/routes/auth.routes.js` - Added `/me` dan `/logout` endpoints
-- `src/routes/patient.routes.js` - ✅ OK (semua endpoints sudah ada)
-- `src/routes/receptionist.routes.js` - Added queue update, patient register, list patients
-- `src/routes/doctor.routes.js` - ✅ OK
-- `src/routes/pharmacist.routes.js` - ✅ OK
-- `src/routes/cashier.routes.js` - ✅ OK
-- `src/routes/admin.routes.js` - ✅ OK
-- `src/routes/reports.routes.js` - Added missing imports dan endpoints
-
-**Masalah yang Diperbaiki:**
-- Semua routes memiliki authentication middleware
-- Semua routes memiliki role-based authorization (RBAC)
-- Consistency dalam naming convention
-
----
-
-### 4. **Middleware** ✅
-
-**Status**: Middleware sudah bekerja dengan baik
-
-**Files:**
-- `src/middleware/auth.js` - ✅ OK (JWT verification)
-- `src/middleware/rbac.js` - ✅ OK (Role checking)
-
-**Enhancement di app.js:**
-- Added global error handling middleware
-- Added 404 handler
-
----
-
-### 5. **Application Setup** ✅
-
-**File Modified:**
-- `src/app.js` - Updated dengan error handling global dan complete route imports
-
-**Masalah yang Diperbaiki:**
-- Import routes yang konsisten
-- Error handling middleware
-- 404 Not Found handler
-- CORS sudah enabled
-
----
-
-### 6. **Database & Configuration** ✅
-
-**Files:**
-- `src/config/db.js` - ✅ OK (sudah read .env)
-- `.env` - Sudah ada dengan default values
-
-**Konfigurasi:**
-```env
-PORT=5000
-NODE_ENV=development
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASS=yourpassword
-DB_NAME=klinik_sentosa
-JWT_SECRET=klinik_sentosa_super_secret_2025
-JWT_EXPIRES_IN=7d
+**File yang dibuat:**
+```html
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Klinik Sentosa</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
 ```
 
 ---
 
-### 7. **Database & Seeding** ✅
+#### 2. **File: `frontend/src/App.jsx`** 🔄 DIPERBAIKI
+**Masalah:** Import path salah untuk `PrescriptionList.jsx` (menggunakan `pharmacist` padahal folder `pharmacy`).
 
-**Files:**
-- `database/schema.sql` - ✅ OK (complete database schema)
-- `database/seeds_sql.sql` - NEW (SQL-format seeder dengan test data)
+**Perubahan:**
+- Line 11: Mengubah import dari `./pages/pharmacist/PrescriptionList.jsx` 
+- Menjadi: `./pages/pharmacy/PrescriptionList.jsx`
 
-**Test Accounts Created:**
-- Admin: admin@klinik.com / admin123
-- Dokter: dokter@klinik.com / dokter123
-- Resepsionis: resepsionis@klinik.com / resepsionis123
-- Apoteker: apoteker@klinik.com / apoteker123
-- Kasir: kasir@klinik.com / kasir123
-- Pasien (3): pasien1-3@klinik.com / pasien123
-
----
-
-## ✨ PERBAIKAN FRONTEND (React + Vite)
-
-### 1. **API Service Layer** ✅
-
-**Files Modified:**
-- `src/services/api.js` - Fixed baseURL dengan VITE_API_BASE
-- `src/services/patientService.js` - ✅ REPLACED dengan complete service exports
-
-**Services Created:**
+**Sebelum:**
 ```javascript
-export const authService = { ... }          // Auth endpoints
-export const patientService = { ... }       // Patient endpoints
-export const receptionistService = { ... }  // Receptionist endpoints
-export const doctorService = { ... }        // Doctor endpoints
-export const pharmacistService = { ... }    // Pharmacist endpoints
-export const cashierService = { ... }       // Cashier endpoints
-export const adminService = { ... }         // Admin endpoints
-export const reportService = { ... }        // Report endpoints
+import PharmacistPrescriptions from './pages/pharmacist/PrescriptionList.jsx';
 ```
 
-**Masalah yang Diperbaiki:**
-- Semua API calls di-centralize di satu file
-- Consistent URL construction
-- Auth interceptor working properly
-- Logout redirect on 401
+**Sesudah:**
+```javascript
+import PharmacistPrescriptions from './pages/pharmacy/PrescriptionList.jsx';
+```
 
 ---
 
-### 2. **Authentication Context** ✅
+#### 3. **File: `frontend/src/components/RoleGuard.jsx`** 🔄 DIPERBAIKI
+**Masalah:** 
+- Import menggunakan ekstensi `.js` padahal file `.jsx`
+- Import dari `hooks/useAuth.jsx` padahal seharusnya dari `contexts/AuthContext.jsx`
 
-**File Modified:**
-- `src/contexts/AuthContext.jsx` - Updated untuk use service layer
-- Added getProfile, login, logout, register flows
+**Perubahan:**
+- Line 3: Mengubah import dari `../hooks/useAuth.js` menjadi `../contexts/AuthContext.jsx`
 
-**Masalah yang Diperbaiki:**
-- Using proper service layer instead of direct axios
-- Error handling yang better
-- Token management
+**Sebelum:**
+```javascript
+import { useAuth } from '../hooks/useAuth.js';
+```
 
----
-
-### 3. **Layout Components** ✅
-
-**Files Modified:**
-- `src/components/layout/Navbar.jsx` - Better logout handling, improved UI
-- `src/components/layout/Sidebar.jsx` - Better menu config per role, active state detection
-
-**Improvements:**
-- Navbar shows current user role
-- Better styling dengan Tailwind
-- Sidebar auto-collapse logic
-- Active menu highlighting
+**Sesudah:**
+```javascript
+import { useAuth } from '../contexts/AuthContext.jsx';
+```
 
 ---
 
-### 4. **Auth Pages** ✅
+#### 4. **File: `frontend/src/contexts/AuthContext.jsx`** 🔄 DIPERBAIKI
+**Masalah:** `AuthContext` tidak diekspor, menyebabkan error saat diimport di `useAuth.jsx`.
 
-**Files Modified:**
-- `src/pages/auth/Login.jsx` - Fixed dengan service layer, better error handling, loading state
-- `src/pages/auth/Register.jsx` - ✅ OK
+**Perubahan:**
+- Line 5: Menambahkan `export` pada deklarasi `AuthContext`
 
----
+**Sebelum:**
+```javascript
+const AuthContext = createContext();
+```
 
-### 5. **Role-Specific Pages** ✅
-
-**Receptionist Pages:**
-- `src/pages/receptionist/TodayQueue.jsx` - ✅ FIXED dengan service integration
-
-**Doctor Pages:**
-- `src/pages/doctor/PatientQueue.jsx` - ✅ FIXED dengan service integration
-
-**Pharmacist Pages:**
-- `src/pages/pharmacy/PrescriptionList.jsx` - ✅ FIXED dengan service integration
-
-**Cashier Pages:**
-- `src/pages/cashier/PaymentQueue.jsx` - ✅ FIXED dengan service integration
-
-**Masalah yang Diperbaiki:**
-- Semua pages menggunakan service layer
-- Proper error handling
-- Loading states
-- Form inputs dengan validation
-- Response data handling
+**Sesudah:**
+```javascript
+export const AuthContext = createContext();
+```
 
 ---
 
-### 6. **Environment Setup** ✅
+#### 5. **File: `frontend/src/pages/patient/Profile.jsx`** 🔄 DIPERBAIKI
+**Masalah:** Import `useAuth` dari path yang salah.
 
-**File Created:**
-- `frontend/.env` - New dengan VITE_API_BASE
+**Perubahan:**
+- Line 3: Mengubah import dari `../../hooks/useAuth.js` menjadi `../../contexts/AuthContext.jsx`
 
+**Sebelum:**
+```javascript
+import { useAuth } from '../../hooks/useAuth.js';
+```
+
+**Sesudah:**
+```javascript
+import { useAuth } from '../../contexts/AuthContext.jsx';
+```
+
+---
+
+#### 6. **File: `frontend/package.json`** ➕ DEPENDENCIES DITAMBAHKAN
+**Masalah:** Tailwind CSS belum terinstall, menyebabkan styling tidak berfungsi.
+
+**Perubahan:**
+- Menambahkan devDependencies:
+  - `tailwindcss@^4.1.17`
+  - `postcss@^8.5.6`
+  - `autoprefixer@^10.4.22`
+  - `@tailwindcss/vite@^1.0.0`
+  - `@tailwindcss/postcss@^4.1.17`
+
+**Command yang dijalankan:**
+```bash
+npm install -D tailwindcss postcss autoprefixer @tailwindcss/vite @tailwindcss/postcss
+```
+
+---
+
+#### 7. **File: `frontend/vite.config.js`** 🔄 DIPERBAIKI
+**Masalah:** Tailwind CSS v4 memerlukan plugin Vite khusus.
+
+**Perubahan:**
+- Menambahkan import `@tailwindcss/vite`
+- Menambahkan plugin Tailwind ke konfigurasi Vite
+
+**Sebelum:**
+```javascript
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  // ...
+});
+```
+
+**Sesudah:**
+```javascript
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  // ...
+});
+```
+
+---
+
+#### 8. **File: `frontend/src/index.css`** 🔄 DIPERBAIKI
+**Masalah:** Sintaks Tailwind CSS v3 tidak kompatibel dengan v4.
+
+**Perubahan:**
+- Mengubah dari `@tailwind` directives ke `@import "tailwindcss"`
+- Menambahkan `@theme` untuk custom colors
+
+**Sebelum:**
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+**Sesudah:**
+```css
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #1e40af;
+  --color-secondary: #0ea5e9;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+}
+```
+
+---
+
+#### 9. **File: `frontend/postcss.config.js`** ❌ DIHAPUS
+**Masalah:** File tidak diperlukan karena menggunakan plugin Vite untuk Tailwind v4.
+
+**Perubahan:**
+- File dihapus karena Tailwind v4 menggunakan plugin Vite, bukan PostCSS
+
+---
+
+#### 10. **File: `frontend/.env`** 🔄 DIPERBAIKI
+**Masalah:** Port API salah (5001 padahal backend di 5000).
+
+**Perubahan:**
+- Mengubah `VITE_API_BASE` dari `http://localhost:5001/api` menjadi `http://localhost:5000/api`
+
+**Sebelum:**
+```env
+VITE_API_BASE=http://localhost:5001/api
+```
+
+**Sesudah:**
 ```env
 VITE_API_BASE=http://localhost:5000/api
 ```
 
 ---
 
-### 7. **App Routing** ✅
+### 🔧 Perbaikan Backend
 
-**File:**
-- `src/App.jsx` - ✅ OK (sudah ada semua routes)
-- Protected routes dengan RoleGuard
+#### 11. **File: `backend/.env`** ✨ DIBUAT BARU
+**Masalah:** File `.env` tidak ada, menyebabkan backend tidak bisa membaca konfigurasi database.
+
+**Perubahan:**
+- Membuat file `.env` baru dengan konfigurasi lengkap
+
+**Isi file:**
+```env
+PORT=5000
+NODE_ENV=development
+
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASS=postgres
+DB_NAME=klinik_sentosa
+
+# JWT Configuration
+JWT_SECRET=klinik_sentosa_super_secret_2025
+JWT_EXPIRES_IN=7d
+```
+
+**Catatan:** User harus mengubah `DB_PASS` sesuai password PostgreSQL mereka.
 
 ---
 
-### 8. **Vite Configuration** ✅
+#### 12. **File: `backend/server.js`** 🔄 DIPERBAIKI
+**Masalah:** 
+- Tidak ada test database connection
+- Error handling kurang informatif
 
-**File:**
-- `vite.config.js` - ✅ OK dengan react plugin
+**Perubahan:**
+- Menambahkan import `sequelize` dari config
+- Menambahkan test database connection sebelum start server
+- Memperbaiki error handling dengan informasi lebih detail
+
+**Sebelum:**
+```javascript
+import app from './src/app.js';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`✅ Backend running on http://localhost:${PORT}`);
+});
+```
+
+**Sesudah:**
+```javascript
+import app from './src/app.js';
+import dotenv from 'dotenv';
+import sequelize from './src/config/db.js';
+
+dotenv.config();
+
+const PORT = process.env.PORT || 5000;
+
+// Test database connection
+sequelize.authenticate()
+  .then(() => {
+    console.log('✅ Database connected.');
+    app.listen(PORT, () => {
+      console.log(`✅ Backend running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    // Error handling dengan informasi detail
+    // ...
+    process.exit(1);
+  });
+```
+
+**Fitur baru:**
+- Test koneksi database sebelum start server
+- Error message yang lebih informatif
+- Checklist dan solusi berdasarkan jenis error
+- Menampilkan nilai environment variables (password di-mask)
 
 ---
 
-## 📦 API ENDPOINTS YANG SUDAH BEKERJA
+#### 13. **File: `backend/src/config/db.js`** 🔄 DIPERBAIKI
+**Masalah:** 
+- Tidak ada validasi environment variables
+- Error handling kurang baik
 
-### Authentication
-```
-✅ POST   /api/auth/register     - Daftar pasien
-✅ POST   /api/auth/login        - Login
-✅ GET    /api/auth/me           - Get current user
-✅ POST   /api/auth/logout       - Logout
-```
+**Perubahan:**
+- Menambahkan validasi environment variables
+- Menambahkan connection pool configuration
+- Memperbaiki format kode
 
-### Patient
-```
-✅ GET    /api/patients/me                  - Get patient profile
-✅ PUT    /api/patients/me                  - Update patient profile
-✅ GET    /api/patients/me/visits           - Get patient visits
-✅ GET    /api/patients/me/queue            - Get queue status
-```
-
-### Receptionist
-```
-✅ POST   /api/receptionist/queue           - Create queue
-✅ GET    /api/receptionist/queues/today    - Get today's queues
-✅ PATCH  /api/receptionist/queue/:id       - Update queue status
-✅ POST   /api/receptionist/patients        - Register new patient
-✅ GET    /api/receptionist/patients        - List all patients
+**Sebelum:**
+```javascript
+const sequelize = new Sequelize(
+  process.env.DB_NAME,
+  process.env.DB_USER,
+  process.env.DB_PASS,
+  {
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    dialect: 'postgres',
+    logging: false
+  }
+);
 ```
 
-### Doctor
-```
-✅ GET    /api/doctor/queue                 - Get patient queue
-✅ GET    /api/doctor/patients/:id/records  - Get patient records
-✅ POST   /api/doctor/records               - Create medical record
-✅ PATCH  /api/doctor/records/:id/complete  - Complete examination
+**Sesudah:**
+```javascript
+// Validate environment variables
+if (!process.env.DB_NAME || !process.env.DB_USER || !process.env.DB_PASS) {
+  console.error('❌ Database configuration missing in .env file!');
+  console.error('Required: DB_NAME, DB_USER, DB_PASS, DB_HOST, DB_PORT');
+  process.exit(1);
+}
+
+const sequelize = new Sequelize(
+  process.env.DB_NAME,
+  process.env.DB_USER,
+  process.env.DB_PASS,
+  {
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 5432,
+    dialect: 'postgres',
+    logging: false,
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000
+    }
+  }
+);
 ```
 
-### Pharmacist
-```
-✅ GET    /api/pharmacist/prescriptions           - Get prescriptions
-✅ PATCH  /api/pharmacist/prescriptions/:id/approve  - Approve prescription
-✅ PATCH  /api/pharmacist/prescriptions/:id/reject   - Reject prescription
-✅ POST   /api/pharmacist/prescriptions/:id/dispense - Dispense medicine
-✅ GET    /api/pharmacist/medicines              - Get medicines
-✅ POST   /api/pharmacist/medicines              - Create medicine
-✅ PUT    /api/pharmacist/medicines/:id          - Update medicine
-✅ DELETE /api/pharmacist/medicines/:id          - Delete medicine
+**Fitur baru:**
+- Validasi environment variables saat startup
+- Connection pool untuk performa lebih baik
+- Default values untuk host dan port
+
+---
+
+#### 14. **File: `backend/src/controllers/auth.controller.js`** 🔄 DIPERBAIKI
+**Masalah:** Error handling kurang informatif, tidak ada validasi input.
+
+**Perubahan:**
+- Menambahkan validasi input (email dan password harus diisi)
+- Memperbaiki error handling dengan informasi lebih detail
+- Menambahkan pengecekan JWT_SECRET
+
+**Sebelum:**
+```javascript
+export const login = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await User.findOne({ where: { email } });
+    // ...
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 ```
 
-### Cashier
-```
-✅ GET    /api/cashier/pending         - Get pending payments
-✅ POST   /api/cashier/transactions    - Process transaction
-✅ GET    /api/cashier/transactions    - Get transaction history
-✅ GET    /api/cashier/stats           - Get stats
+**Sesudah:**
+```javascript
+export const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // Validasi input
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email dan password harus diisi.' });
+    }
+
+    const user = await User.findOne({ where: { email } });
+    // ...
+
+    if (!process.env.JWT_SECRET) {
+      console.error('❌ JWT_SECRET tidak ditemukan di environment variables');
+      return res.status(500).json({ error: 'Konfigurasi server tidak lengkap.' });
+    }
+
+    // ...
+  } catch (err) {
+    console.error('❌ Login error:', err);
+    res.status(500).json({ 
+      error: err.message || 'Terjadi kesalahan saat login.',
+      details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
+  }
+};
 ```
 
-### Admin
-```
-✅ GET    /api/admin/dashboard         - Get dashboard stats
-✅ GET    /api/admin/users             - Get all users
-✅ POST   /api/admin/users             - Create user
-✅ PUT    /api/admin/users/:id         - Update user
-✅ DELETE /api/admin/users/:id         - Delete user
-✅ GET    /api/admin/medicines         - Get medicines
-✅ POST   /api/admin/medicines         - Create medicine
-✅ PUT    /api/admin/medicines/:id     - Update medicine
-✅ DELETE /api/admin/medicines/:id     - Delete medicine
-```
+**Fitur baru:**
+- Validasi input
+- Error logging untuk debugging
+- Pengecekan konfigurasi JWT_SECRET
+- Error details di development mode
 
-### Reports
-```
-✅ GET    /api/reports/dashboard       - Get dashboard report
-✅ GET    /api/reports/visits          - Get visits report
-✅ GET    /api/reports/transactions    - Get transactions report
-✅ GET    /api/reports/medicine-usage  - Get medicine usage report
+---
+
+### 🗄️ Perbaikan Database
+
+#### 15. **File: `database/schema.sql`** 🔄 DIPERBAIKI BESAR-BESARAN
+**Masalah:** 
+- Schema tidak lengkap (hanya 4 tabel)
+- Format timestamp tidak kompatibel dengan Sequelize
+- Tidak ada indexes
+- Tidak ada DROP TABLE statements
+
+**Perubahan:**
+
+**Tabel yang ditambahkan:**
+- `medicines` (baru)
+- `medical_records` (baru)
+- `prescriptions` (baru)
+- `prescription_items` (baru)
+- `transactions` (baru)
+
+**Tabel yang diperbaiki:**
+- `users` - menambahkan `"createdAt"` dan `"updatedAt"`
+- `patients` - menambahkan kolom lengkap dan timestamps
+- `staff` - menambahkan kolom lengkap dan timestamps
+- `queues` - menambahkan timestamps
+
+**Format timestamp:**
+- **Sebelum:** `created_at TIMESTAMPTZ` (snake_case)
+- **Sesudah:** `"createdAt" TIMESTAMPTZ` dan `"updatedAt" TIMESTAMPTZ` (camelCase dengan quotes)
+
+**Fitur baru:**
+- DROP TABLE statements untuk fresh install
+- Indexes untuk performa:
+  - `idx_users_email`
+  - `idx_queues_status`
+  - `idx_queues_patient_id`
+  - `idx_medical_records_patient_id`
+  - `idx_medical_records_doctor_id`
+  - `idx_prescriptions_status`
+  - `idx_transactions_patient_id`
+- Foreign keys dengan ON DELETE CASCADE/SET NULL
+- CHECK constraints untuk enum values
+
+**Struktur lengkap:**
+```sql
+-- 9 tabel lengkap
+users
+patients
+staff
+medicines
+queues
+medical_records
+prescriptions
+prescription_items
+transactions
 ```
 
 ---
 
-## 🐛 BUGS YANG SUDAH DIPERBAIKI
+#### 16. **File: `database/SETUP_DATABASE.md`** ✨ DIBUAT BARU
+**Masalah:** Tidak ada dokumentasi lengkap untuk setup database.
 
-### Backend
-- ❌ Import `Op` tidak ada di receptionist.controller.js → ✅ FIXED
-- ❌ Models tidak konsisten → ✅ FIXED dengan factory pattern
-- ❌ Missing controllers → ✅ CREATED 5 controllers baru
-- ❌ Auth endpoint `/me` tidak ada → ✅ ADDED
-- ❌ Global error handling tidak ada → ✅ ADDED
-- ❌ Response format tidak konsisten → ✅ STANDARDIZED
+**Perubahan:**
+- Membuat file dokumentasi lengkap untuk setup database
+- Menambahkan langkah-langkah setup
+- Menambahkan troubleshooting guide
+- Menambahkan test accounts
+- Menambahkan checklist
 
-### Frontend
-- ❌ API base URL tidak benar → ✅ FIXED dengan VITE_API_BASE
-- ❌ Service layer tidak ada → ✅ CREATED complete service layer
-- ❌ Import paths inconsistent → ✅ FIXED semua imports
-- ❌ Components tidak menggunakan services → ✅ ALL UPDATED
-- ❌ Logout tidak working → ✅ FIXED
-- ❌ .env tidak ada → ✅ CREATED
-
----
-
-## 📂 STRUKTUR PROJECT FINAL
-
-```
-backend/
-├── src/
-│   ├── app.js                    (✅ Updated)
-│   ├── config/
-│   │   └── db.js                 (✅ OK)
-│   ├── controllers/
-│   │   ├── admin.controller.js            (✅ NEW)
-│   │   ├── auth.controller.js             (✅ FIXED)
-│   │   ├── cashier.controller.js          (✅ NEW)
-│   │   ├── doctor.controller.js           (✅ NEW)
-│   │   ├── patient.controller.js          (✅ NEW)
-│   │   ├── pharmacist.controller.js       (✅ NEW)
-│   │   └── receptionist.controller.js     (✅ FIXED)
-│   ├── middleware/
-│   │   ├── auth.js               (✅ OK)
-│   │   └── rbac.js               (✅ OK)
-│   ├── models/
-│   │   ├── Doctor.js             (✅ NEW)
-│   │   ├── Index.js              (✅ REPLACED)
-│   │   ├── MedicalRecord.js      (✅ OK)
-│   │   ├── Medicine.js           (✅ OK)
-│   │   ├── Patient.js            (✅ OK)
-│   │   ├── Prescription.js       (✅ OK)
-│   │   ├── PrescriptionItem.js   (✅ OK)
-│   │   ├── Queue.js              (✅ OK)
-│   │   ├── Staff.js              (✅ OK)
-│   │   ├── Transaction.js        (✅ OK)
-│   │   └── User.js               (✅ FIXED)
-│   ├── routes/
-│   │   ├── admin.routes.js       (✅ OK)
-│   │   ├── auth.routes.js        (✅ FIXED)
-│   │   ├── cashier.routes.js     (✅ OK)
-│   │   ├── doctor.routes.js      (✅ OK)
-│   │   ├── patient.routes.js     (✅ OK)
-│   │   ├── pharmacist.routes.js  (✅ OK)
-│   │   ├── receptionist.routes.js(✅ FIXED)
-│   │   ├── report.controller.js  (✅ FIXED)
-│   │   └── reports.routes.js     (✅ FIXED)
-│   └── utils/
-│       ├── pdfGenerator.js       (✅ OK)
-│       └── queueGenerator.js     (✅ OK)
-├── server.js                     (✅ OK)
-├── package.json                  (✅ OK)
-└── .env                          (✅ OK)
-
-frontend/
-├── src/
-│   ├── App.jsx                   (✅ OK)
-│   ├── main.jsx                  (✅ OK)
-│   ├── index.css                 (✅ OK)
-│   ├── components/
-│   │   ├── RoleGuard.jsx         (✅ OK)
-│   │   └── layout/
-│   │       ├── Layout.jsx        (✅ OK)
-│   │       ├── Navbar.jsx        (✅ FIXED)
-│   │       └── Sidebar.jsx       (✅ FIXED)
-│   ├── contexts/
-│   │   └── AuthContext.jsx       (✅ FIXED)
-│   ├── hooks/
-│   │   └── useAuth.jsx           (✅ OK)
-│   ├── pages/
-│   │   ├── auth/
-│   │   │   ├── Login.jsx         (✅ FIXED)
-│   │   │   └── Register.jsx      (✅ OK)
-│   │   ├── admin/
-│   │   │   ├── Dashboard.jsx     (✅ OK)
-│   │   │   ├── MedicinesManagement.jsx
-│   │   │   ├── MedicineUsageChart.jsx
-│   │   │   ├── TransactionsReport.jsx
-│   │   │   ├── UsersManagement.jsx
-│   │   │   └── VisitsReport.jsx
-│   │   ├── cashier/
-│   │   │   ├── PaymentQueue.jsx  (✅ FIXED)
-│   │   │   ├── BillingForm.jsx
-│   │   │   └── ReceiptPreview.jsx
-│   │   ├── doctor/
-│   │   │   ├── PatientQueue.jsx  (✅ FIXED)
-│   │   │   └── ExaminationForm.jsx
-│   │   ├── patient/
-│   │   │   ├── Dashboard.jsx     (✅ OK)
-│   │   │   ├── History.jsx
-│   │   │   ├── Profile.jsx
-│   │   │   └── QueueStatus.jsx
-│   │   ├── pharmacy/
-│   │   │   └── PrescriptionList.jsx (✅ FIXED)
-│   │   └── receptionist/
-│   │       ├── TodayQueue.jsx    (✅ FIXED)
-│   │       ├── ManagePatients.jsx
-│   │       └── RegisterPatient.jsx
-│   ├── services/
-│   │   ├── api.js                (✅ FIXED)
-│   │   └── patientService.js     (✅ REPLACED)
-│   └── utils/
-│       └── roles.js              (✅ OK)
-├── index.html                    (✅ OK)
-├── package.json                  (✅ OK)
-├── vite.config.js                (✅ OK)
-├── .env                          (✅ NEW)
-└── tailwind.config.js            (✅ OK)
-
-database/
-├── schema.sql                    (✅ OK)
-└── seeds_sql.sql                 (✅ NEW)
-```
+**Isi dokumentasi:**
+- Langkah setup PostgreSQL
+- Cara membuat database
+- Cara menjalankan schema
+- Cara menjalankan seeds
+- Verifikasi database
+- Troubleshooting common errors
+- Checklist setup
 
 ---
 
-## 🚀 CARA MENJALANKAN
+## 📊 Ringkasan Perubahan
 
-### Quick Start (dengan asumsi PostgreSQL sudah installed)
+### File yang Dibuat Baru (3):
+1. `frontend/index.html`
+2. `backend/.env`
+3. `database/SETUP_DATABASE.md`
 
-```bash
-# 1. Setup Database
-createdb klinik_sentosa
-psql -U postgres -d klinik_sentosa -f database/schema.sql
-psql -U postgres -d klinik_sentosa -f database/seeds_sql.sql
+### File yang Dihapus (1):
+1. `frontend/postcss.config.js`
 
-# 2. Run Backend (terminal 1)
-cd backend
-npm install
-npm run dev
+### File yang Diperbaiki (13):
+1. `frontend/src/App.jsx`
+2. `frontend/src/components/RoleGuard.jsx`
+3. `frontend/src/contexts/AuthContext.jsx`
+4. `frontend/src/pages/patient/Profile.jsx`
+5. `frontend/package.json` (dependencies)
+6. `frontend/vite.config.js`
+7. `frontend/src/index.css`
+8. `frontend/.env`
+9. `backend/server.js`
+10. `backend/src/config/db.js`
+11. `backend/src/controllers/auth.controller.js`
+12. `database/schema.sql` (perubahan besar)
+13. `CHANGELOG.md` (file ini)
 
-# 3. Run Frontend (terminal 2)
-cd frontend
-npm install
-npm run dev
-
-# 4. Open browser
-http://localhost:5174
-
-# 5. Login dengan:
-# Email: admin@klinik.com
-# Password: admin123
-```
-
-Lihat file `SETUP.md` untuk detail lengkap.
-
----
-
-## ✅ CHECKLIST FITUR
-
-### Fitur Core
-- ✅ User Authentication (Login/Register/Logout)
-- ✅ Role-Based Access Control
-- ✅ Patient Management (CRUD)
-- ✅ Queue Management
-- ✅ Medical Records
-- ✅ Prescriptions
-- ✅ Pharmacy Management (Medicines, Dispense)
-- ✅ Payment Processing
-- ✅ Admin Dashboard
-- ✅ Reports
-
-### Fitur Teknis
-- ✅ JWT Authentication
-- ✅ Bcrypt Password Hashing
-- ✅ Sequelize ORM
-- ✅ CORS Enabled
-- ✅ Error Handling (Global & Per-Endpoint)
-- ✅ Request Validation
-- ✅ Environment Configuration
-- ✅ Service Layer Pattern
-- ✅ Responsive UI (Tailwind CSS)
+### Dependencies yang Ditambahkan:
+- `tailwindcss@^4.1.17`
+- `postcss@^8.5.6`
+- `autoprefixer@^10.4.22`
+- `@tailwindcss/vite@^1.0.0`
+- `@tailwindcss/postcss@^4.1.17`
 
 ---
 
-## 📝 CATATAN PENTING
+## ✅ Hasil Akhir
 
-### Untuk Production
-1. Update `.env` dengan nilai yang aman:
-   - Change `JWT_SECRET` menjadi string random yang panjang
-   - Update database credentials
-   - Set `NODE_ENV=production`
+Setelah semua perubahan:
+- ✅ Frontend bisa diakses tanpa error 404
+- ✅ Tailwind CSS berfungsi dengan baik
+- ✅ Import paths sudah benar
+- ✅ Backend bisa connect ke database
+- ✅ Error handling lebih informatif
+- ✅ Database schema lengkap dan siap digunakan
+- ✅ Dokumentasi lengkap tersedia
 
-2. Build frontend:
+---
+
+## 🔄 Cara Menggunakan Perubahan
+
+1. **Frontend:**
    ```bash
    cd frontend
-   npm run build
+   npm install  # Install dependencies baru
+   npm run dev  # Restart server
    ```
 
-3. Deploy backend dan static files ke server
-
-### Testing
-- Semua endpoints sudah tested dan working
-- Data test sudah di-seed ke database
-- UI sudah responsive dan user-friendly
-
-### Known Limitations
-- File upload untuk medical records belum implemented
-- SMS/Email notifications belum implemented
-- Payment gateway integration belum implemented
-
----
-
-## 📞 DUKUNGAN & NEXT STEPS
-
-Untuk menambah fitur atau fixing bugs lebih lanjut:
-
-1. **Debug Backend**: 
+2. **Backend:**
    ```bash
-   NODE_DEBUG=* npm start
+   cd backend
+   # Edit .env dan sesuaikan DB_PASS
+   npm run dev  # Restart server
    ```
 
-2. **Debug Frontend**: 
-   - F12 → Console & Network tab
-
-3. **Database Inspection**:
+3. **Database:**
    ```bash
-   psql -U postgres -d klinik_sentosa
-   \dt                    # List tables
-   SELECT * FROM users;   # View data
+   # Buat database
+   psql -U postgres -c "CREATE DATABASE klinik_sentosa;"
+   
+   # Jalankan schema
+   psql -U postgres -d klinik_sentosa -f database/schema.sql
+   
+   # (Opsional) Jalankan seeds
+   psql -U postgres -d klinik_sentosa -f database/seeds_sql.sql
    ```
 
 ---
 
-## 🎉 KESIMPULAN
-
-Sistem Informasi Manajemen Klinik Sentosa sudah:
-- ✅ Fully Functional
-- ✅ Production Ready
-- ✅ Best Practices Implemented
-- ✅ Well Documented
-- ✅ Testable & Maintainable
-
-**Siap untuk dijalankan dan di-deploy!**
-
----
-
-**Last Updated**: November 24, 2025  
-**Version**: 1.0.0  
-**Status**: ✅ PRODUCTION READY
+**Dokumentasi dibuat:** 24 November 2025  
+**Versi:** 1.0.0
