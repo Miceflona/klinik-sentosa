@@ -1,6 +1,6 @@
 // frontend/src/components/RoleGuard.jsx
 import React from 'react';
-import { useAuth } from '../hooks/useAuth.js';
+import { useAuth } from '../contexts/AuthContext.jsx';
 import { Navigate } from 'react-router-dom';
 
 export default function RoleGuard({ children, roles }) {

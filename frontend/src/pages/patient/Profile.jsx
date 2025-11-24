@@ -1,6 +1,6 @@
 // frontend/src/pages/patient/Profile.jsx
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../hooks/useAuth.js';
+import { useAuth } from '../../contexts/AuthContext.jsx';
 import axios from 'axios';
 
 export default function Profile() {

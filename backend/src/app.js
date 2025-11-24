@@ -19,6 +19,37 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Root endpoint - API information
+app.get('/', (req, res) => {
+  res.json({
+    name: 'Klinik Sentosa API',
+    version: '1.0.0',
+    status: 'running',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: 'GET /health',
+      auth: {
+        register: 'POST /api/auth/register',
+        login: 'POST /api/auth/login',
+        profile: 'GET /api/auth/me (authenticated)',
+        logout: 'POST /api/auth/logout (authenticated)'
+      },
+      documentation: 'See README.md for complete API documentation'
+    },
+    message: 'Welcome to Klinik Sentosa Management System API'
+  });
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    message: 'Server is running'
+  });
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/patients', patientRoutes);
@@ -37,7 +68,30 @@ app.use((err, req, res, next) => {
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({ error: 'Endpoint tidak ditemukan' });
+  console.log(`❌ 404 - ${req.method} ${req.path}`);
+  res.status(404).json({ 
+    error: 'Endpoint tidak ditemukan',
+    path: req.path,
+    method: req.method,
+    message: `Tidak ada endpoint ${req.method} ${req.path}`,
+    availableEndpoints: {
+      public: [
+        'GET /',
+        'GET /health',
+        'POST /api/auth/register',
+        'POST /api/auth/login'
+      ],
+      authenticated: [
+        'GET /api/auth/me',
+        'POST /api/auth/logout',
+        'GET /api/patients/me',
+        'PUT /api/patients/me',
+        'GET /api/patients/me/visits',
+        'GET /api/patients/me/queue'
+      ],
+      note: 'Untuk endpoint lainnya, pastikan Anda sudah login dan memiliki role yang sesuai'
+    }
+  });
 });
 
 export default app;

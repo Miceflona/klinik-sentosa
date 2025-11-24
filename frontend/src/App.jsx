@@ -8,7 +8,7 @@ import Register from './pages/auth/Register.jsx';
 import PatientDashboard from './pages/patient/Dashboard.jsx';
 import ReceptionistQueue from './pages/receptionist/TodayQueue.jsx';
 import DoctorQueue from './pages/doctor/PatientQueue.jsx';
-import PharmacistPrescriptions from './pages/pharmacist/PrescriptionList.jsx';
+import PharmacistPrescriptions from './pages/pharmacy/PrescriptionList.jsx';
 import CashierPayment from './pages/cashier/PaymentQueue.jsx';
 import AdminDashboard from './pages/admin/Dashboard.jsx';
 

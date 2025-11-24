@@ -41,14 +41,24 @@ export const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    // Validasi input
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email dan password harus diisi.' });
+    }
+
     const user = await User.findOne({ where: { email } });
     if (!user) return res.status(401).json({ error: 'Email atau password salah.' });
 
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(401).json({ error: 'Email atau password salah.' });
 
+    if (!process.env.JWT_SECRET) {
+      console.error('❌ JWT_SECRET tidak ditemukan di environment variables');
+      return res.status(500).json({ error: 'Konfigurasi server tidak lengkap.' });
+    }
+
     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES_IN
+      expiresIn: process.env.JWT_EXPIRES_IN || '7d'
     });
 
     res.json({
@@ -57,7 +67,11 @@ export const login = async (req, res) => {
       user: { id: user.id, name: user.name, email: user.email, role: user.role }
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('❌ Login error:', err);
+    res.status(500).json({ 
+      error: err.message || 'Terjadi kesalahan saat login.',
+      details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
   }
 };
 
