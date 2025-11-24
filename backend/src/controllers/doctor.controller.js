@@ -4,20 +4,67 @@ const { Queue, Patient, MedicalRecord, User, Prescription, PrescriptionItem, Med
 
 export const getDoctorQueue = async (req, res) => {
   try {
+    const { Op } = await import('sequelize');
+    
+    // Get today's date range
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // Get all queues today with status menunggu or dipanggil, ordered by queue number (sequential)
     const queues = await Queue.findAll({
-      where: { status: 'dipanggil' },
+      where: {
+        createdAt: {
+          [Op.gte]: today,
+          [Op.lt]: tomorrow
+        },
+        status: {
+          [Op.in]: ['menunggu', 'dipanggil']
+        }
+      },
       include: [
         {
           model: Patient,
           as: 'patient',
-          include: [{ model: User, as: 'user' }]
+          include: [{ 
+            model: User, 
+            as: 'user',
+            attributes: { exclude: ['password'] }
+          }]
         }
       ],
-      order: [['createdAt', 'ASC']]
+      order: [
+        ['queue_number', 'ASC'], // Order by queue number (sequential: 1, 2, 3, etc.)
+        ['createdAt', 'ASC'] // Secondary sort by creation time
+      ]
     });
 
-    res.json({ queues });
+    // Format response with queue position
+    const formattedQueues = queues.map((queue, index) => ({
+      id: queue.id,
+      queue_number: queue.queue_number,
+      status: queue.status,
+      createdAt: queue.createdAt,
+      created_at: queue.createdAt,
+      position: index + 1, // Position in queue (1, 2, 3, etc.)
+      patient: {
+        user_id: queue.patient?.user_id,
+        user: queue.patient?.user ? {
+          id: queue.patient.user.id,
+          name: queue.patient.user.name,
+          email: queue.patient.user.email,
+          phone: queue.patient.user.phone,
+          address: queue.patient.user.address
+        } : null
+      },
+      patient_id: queue.patient_id,
+      patient_name: queue.patient?.user?.name || 'Pasien'
+    }));
+
+    res.json({ queues: formattedQueues });
   } catch (err) {
+    console.error('Error getting doctor queue:', err);
     res.status(500).json({ error: err.message });
   }
 };

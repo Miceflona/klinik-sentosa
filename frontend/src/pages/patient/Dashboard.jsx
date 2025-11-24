@@ -1,29 +1,45 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { patientService } from '../../services/patientService.js';
 
 export default function PatientDashboard() {
   const [visits, setVisits] = useState([]);
+  const [queue, setQueue] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [queueLoading, setQueueLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchVisits = async () => {
+    const fetchData = async () => {
+      // Fetch visits
       try {
         setLoading(true);
         setError(null);
         const res = await patientService.getVisits();
-        // API returns { visits: [...] }, so we need to access res.data.visits
         const visitsData = res.data?.visits || res.data || [];
         setVisits(Array.isArray(visitsData) ? visitsData : []);
       } catch (err) {
         console.error('Error fetching visits:', err);
         setError(err.response?.data?.error || 'Gagal memuat riwayat kunjungan');
-        setVisits([]); // Ensure visits is always an array
+        setVisits([]);
       } finally {
         setLoading(false);
       }
+
+      // Fetch queue status
+      try {
+        setQueueLoading(true);
+        const queueRes = await patientService.getQueueStatus();
+        setQueue(queueRes.data?.queue || null);
+      } catch (err) {
+        console.error('Error fetching queue status:', err);
+        setQueue(null);
+      } finally {
+        setQueueLoading(false);
+      }
     };
-    fetchVisits();
+    fetchData();
   }, []);
 
   return (
@@ -39,12 +55,39 @@ export default function PatientDashboard() {
         <div className="bg-white rounded-lg shadow p-5">
           <div className="flex items-center">
             <div className="p-3 bg-blue-100 rounded-full">
-              <span className="text-blue-600 text-xl">🔢</span>
+              <span className="text-blue-600 text-xl">🎫</span>
             </div>
-            <div className="ml-4">
-              <p className="text-sm text-gray-600">Antrian Saat Ini</p>
-              <p className="text-2xl font-bold">A-007</p>
-              <p className="text-sm text-gray-500">Sedang dipanggil</p>
+            <div className="ml-4 flex-1">
+              <p className="text-sm text-gray-600 mb-1">Antrian Saat Ini</p>
+              {queueLoading ? (
+                <p className="text-sm text-gray-500">Memuat...</p>
+              ) : queue ? (
+                <>
+                  <p className="text-2xl font-bold text-blue-600">{queue.queue_number}</p>
+                  <p className={`text-sm ${
+                    queue.status === 'menunggu' ? 'text-yellow-600' :
+                    queue.status === 'dipanggil' ? 'text-blue-600' :
+                    'text-green-600'
+                  }`}>
+                    {queue.status === 'menunggu' ? '⏳ Menunggu' :
+                     queue.status === 'dipanggil' ? '📢 Sedang Dipanggil' :
+                     '✅ Selesai'}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-gray-500 mb-2">Belum ada antrian</p>
+                  <p className="text-xs text-gray-400 mb-2">
+                    Belum melakukan pendaftaran pemeriksaan
+                  </p>
+                  <button
+                    onClick={() => navigate('/dashboard/register-examination')}
+                    className="text-xs text-blue-600 hover:text-blue-800 font-medium underline"
+                  >
+                    Daftar Pemeriksaan →
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -54,10 +97,28 @@ export default function PatientDashboard() {
             <div className="p-3 bg-green-100 rounded-full">
               <span className="text-green-600 text-xl">✅</span>
             </div>
-            <div className="ml-4">
+            <div className="ml-4 flex-1">
               <p className="text-sm text-gray-600">Pemeriksaan Terakhir</p>
-              <p className="text-2xl font-bold">12 Nov 2025</p>
-              <p className="text-sm text-gray-500">Influenza</p>
+              {loading ? (
+                <p className="text-sm text-gray-500">Memuat...</p>
+              ) : visits.length > 0 ? (
+                <>
+                  <p className="text-2xl font-bold">
+                    {visits[0].createdAt 
+                      ? new Date(visits[0].createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+                      : visits[0].created_at 
+                      ? new Date(visits[0].created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+                      : '-'}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {visits[0].diagnosis || visits[0].complaint || 'Tidak ada diagnosa'}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-gray-500">Belum ada pemeriksaan</p>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -67,10 +128,24 @@ export default function PatientDashboard() {
             <div className="p-3 bg-purple-100 rounded-full">
               <span className="text-purple-600 text-xl">💊</span>
             </div>
-            <div className="ml-4">
+            <div className="ml-4 flex-1">
               <p className="text-sm text-gray-600">Resep Terakhir</p>
-              <p className="text-2xl font-bold">3 obat</p>
-              <p className="text-sm text-gray-500">Paracetamol, dll</p>
+              {loading ? (
+                <p className="text-sm text-gray-500">Memuat...</p>
+              ) : visits.length > 0 && visits[0].prescription ? (
+                <>
+                  <p className="text-2xl font-bold">
+                    {visits[0].prescription.items?.length || 0} obat
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {visits[0].prescription.items?.[0]?.medicine_name || 'Tidak ada detail'}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-gray-500">Belum ada resep</p>
+                </>
+              )}
             </div>
           </div>
         </div>
