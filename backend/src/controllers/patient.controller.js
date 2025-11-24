@@ -111,11 +111,155 @@ export const getPatientQueueStatus = async (req, res) => {
       where: {
         patient_id: req.user.id,
         status: { [Op.ne]: 'selesai' }
+      },
+      order: [['createdAt', 'DESC']],
+      include: [
+        {
+          model: Patient,
+          as: 'patient',
+          include: [{ model: User, as: 'user', attributes: { exclude: ['password'] } }]
+        }
+      ]
+    });
+
+    if (!queue) {
+      return res.json({ queue: null });
+    }
+
+    // Calculate queue position (how many patients are ahead)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // Get all active queues today (menunggu or dipanggil) ordered by creation time
+    const activeQueues = await Queue.findAll({
+      where: {
+        createdAt: {
+          [Op.gte]: today,
+          [Op.lt]: tomorrow
+        },
+        status: {
+          [Op.in]: ['menunggu', 'dipanggil']
+        }
+      },
+      order: [['createdAt', 'ASC']]
+    });
+
+    // Find position of current patient's queue
+    const queuePosition = activeQueues.findIndex(q => q.id === queue.id) + 1;
+    const totalInQueue = activeQueues.length;
+
+    // Count how many are ahead (status menunggu and created before this queue)
+    const aheadCount = activeQueues.filter(q => 
+      q.id !== queue.id && 
+      q.createdAt < queue.createdAt && 
+      q.status === 'menunggu'
+    ).length;
+
+    res.json({ 
+      queue: {
+        id: queue.id,
+        queue_number: queue.queue_number,
+        status: queue.status,
+        created_at: queue.createdAt,
+        patient_name: queue.patient?.user?.name || 'Pasien',
+        position: queuePosition,
+        total_in_queue: totalInQueue,
+        ahead_count: aheadCount
+      }
+    });
+  } catch (err) {
+    console.error('Error getting patient queue status:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Register examination - pasien mendaftar untuk pemeriksaan
+export const registerExamination = async (req, res) => {
+  const { complaint, medical_history, blood_type, emergency_contact } = req.body;
+  const patientId = req.user.id;
+
+  try {
+    if (!complaint) {
+      return res.status(400).json({ error: 'Keluhan harus diisi.' });
+    }
+
+    // Check if patient already has an active queue
+    const existingQueue = await Queue.findOne({
+      where: {
+        patient_id: patientId,
+        status: { [Op.in]: ['menunggu', 'dipanggil'] }
       }
     });
 
-    res.json({ queue: queue || null });
+    if (existingQueue) {
+      return res.status(400).json({ 
+        error: 'Anda sudah memiliki antrian aktif. Silakan selesaikan antrian sebelumnya terlebih dahulu.' 
+      });
+    }
+
+    // Find or create patient record
+    let patient = await Patient.findOne({
+      where: { user_id: patientId }
+    });
+
+    if (!patient) {
+      // Create patient record if doesn't exist
+      patient = await Patient.create({
+        user_id: patientId,
+        medical_history: medical_history || null,
+        blood_type: blood_type || null,
+        emergency_contact: emergency_contact || null
+      });
+    } else {
+      // Update patient data if provided
+      await patient.update({
+        medical_history: medical_history !== undefined ? medical_history : patient.medical_history,
+        blood_type: blood_type || patient.blood_type,
+        emergency_contact: emergency_contact || patient.emergency_contact
+      });
+    }
+
+    // Generate sequential queue number
+    const { generateQueueNumber } = await import('../utils/queueGenerator.js');
+    const queueNumber = await generateQueueNumber();
+
+    // Create queue with sequential number
+    const queue = await Queue.create({
+      queue_number: queueNumber.toString(),
+      patient_id: patientId,
+      receptionist_id: null, // Will be set by admin/receptionist later
+      status: 'menunggu'
+    });
+
+    // Create medical record with complaint
+    const medicalRecord = await MedicalRecord.create({
+      patient_id: patientId,
+      doctor_id: null, // Will be set when doctor examines
+      queue_id: queue.id,
+      complaint: complaint,
+      diagnosis: null,
+      notes: null,
+      status: 'menunggu'
+    });
+
+    res.status(201).json({
+      message: 'Pendaftaran pemeriksaan berhasil!',
+      queue_number: queueNumber,
+      queue: {
+        id: queue.id,
+        queue_number: queueNumber,
+        status: queue.status,
+        created_at: queue.createdAt
+      },
+      medical_record: {
+        id: medicalRecord.id,
+        complaint: medicalRecord.complaint
+      }
+    });
   } catch (err) {
+    console.error('Error registering examination:', err);
     res.status(500).json({ error: err.message });
   }
 };

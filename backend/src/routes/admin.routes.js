@@ -11,7 +11,11 @@ import {
   getAllMedicines,
   createMedicine,
   updateMedicine,
-  deleteMedicine
+  deleteMedicine,
+  getAllPatients,
+  getPatientById,
+  updatePatient,
+  deletePatient
 } from '../controllers/admin.controller.js';
 
 const router = express.Router();
@@ -33,5 +37,11 @@ router.get('/medicines', getAllMedicines);
 router.post('/medicines', createMedicine);
 router.put('/medicines/:id', updateMedicine);
 router.delete('/medicines/:id', deleteMedicine);
+
+// Manajemen Pasien
+router.get('/patients', getAllPatients);
+router.get('/patients/:id', getPatientById);
+router.put('/patients/:id', updatePatient);
+router.delete('/patients/:id', deletePatient);
 
 export default router;

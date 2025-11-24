@@ -1,6 +1,6 @@
 // frontend/src/pages/admin/TransactionsReport.jsx
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { reportService } from '../../services/patientService.js';
 
 export default function TransactionsReport() {
   const [transactions, setTransactions] = useState([]);
@@ -18,15 +18,28 @@ export default function TransactionsReport() {
   const fetchTransactions = async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (filters.startDate) params.append('start', filters.startDate);
-      if (filters.endDate) params.append('end', filters.endDate);
-      if (filters.paymentMethod) params.append('method', filters.paymentMethod);
-
-      const res = await axios.get(`/api/reports/transactions?${params}`);
-      setTransactions(res.data);
+      const res = await reportService.getTransactionsReport();
+      // Backend returns { transactions: [...] }
+      let transactionsData = res.data?.transactions || (Array.isArray(res.data) ? res.data : []);
+      
+      // Apply filters
+      if (filters.startDate || filters.endDate || filters.paymentMethod) {
+        transactionsData = transactionsData.filter((t) => {
+          const transactionDate = new Date(t.createdAt || t.created_at);
+          const startDate = filters.startDate ? new Date(filters.startDate) : null;
+          const endDate = filters.endDate ? new Date(filters.endDate) : null;
+          
+          if (startDate && transactionDate < startDate) return false;
+          if (endDate && transactionDate > endDate) return false;
+          if (filters.paymentMethod && t.payment_method !== filters.paymentMethod) return false;
+          return true;
+        });
+      }
+      
+      setTransactions(transactionsData);
     } catch (err) {
-      alert('Gagal memuat laporan.');
+      console.error('Error fetching transactions:', err);
+      alert(err.response?.data?.error || 'Gagal memuat laporan.');
     } finally {
       setLoading(false);
     }
@@ -37,19 +50,28 @@ export default function TransactionsReport() {
     setFilters({ ...filters, [name]: value });
   };
 
-  const totalRevenue = transactions.reduce((sum, t) => sum + t.total, 0);
+  const totalRevenue = transactions.reduce((sum, t) => {
+    const total = parseFloat(t.total) || 0;
+    return sum + total;
+  }, 0);
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800">Laporan Transaksi</h1>
-        <div className="text-lg font-bold text-success">
-          Total: Rp {totalRevenue.toLocaleString('id-ID')}
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800">Transaksi & Laporan</h1>
+          <p className="text-gray-600 mt-1">Lihat laporan pembayaran dan transaksi</p>
+        </div>
+        <div className="text-right">
+          <p className="text-sm text-gray-600">Total Pendapatan</p>
+          <p className="text-2xl font-bold text-green-600">
+            Rp {totalRevenue.toLocaleString('id-ID')}
+          </p>
         </div>
       </div>
 
       {/* Filter */}
-      <div className="bg-white rounded-lg shadow p-4">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm text-gray-700 mb-1">Dari Tanggal</label>
@@ -88,17 +110,21 @@ export default function TransactionsReport() {
           <div className="flex items-end">
             <button
               onClick={fetchTransactions}
-              className="w-full bg-primary text-white py-2 rounded hover:bg-blue-700"
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition font-medium"
             >
-              Terapkan Filter
+              🔍 Terapkan Filter
             </button>
           </div>
         </div>
       </div>
 
       {/* Tabel */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="p-4 border-b border-gray-200 bg-gray-50">
+          <h3 className="text-lg font-semibold text-gray-800">Daftar Transaksi</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
@@ -113,11 +139,17 @@ export default function TransactionsReport() {
             {transactions.map((t) => (
               <tr key={t.id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  {new Date(t.created_at).toLocaleString('id-ID')}
+                  {t.createdAt
+                    ? new Date(t.createdAt).toLocaleString('id-ID')
+                    : t.created_at
+                    ? new Date(t.created_at).toLocaleString('id-ID')
+                    : '-'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">{t.patient_name}</td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {t.patient?.user?.name || t.patient_name || '-'}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap font-medium">
-                  Rp {t.total.toLocaleString('id-ID')}
+                  Rp {parseFloat(t.total || 0).toLocaleString('id-ID')}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 py-1 rounded text-xs ${
@@ -149,8 +181,12 @@ export default function TransactionsReport() {
             ))}
           </tbody>
         </table>
+        </div>
         {transactions.length === 0 && !loading && (
-          <div className="p-6 text-center text-gray-500">Tidak ada transaksi.</div>
+          <div className="p-12 text-center text-gray-500">
+            <div className="text-6xl mb-4">💰</div>
+            <p className="text-lg">Belum ada data transaksi</p>
+          </div>
         )}
       </div>
     </div>

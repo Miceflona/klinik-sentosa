@@ -6,7 +6,8 @@
     "dev": "nodemon server.js",
     "start": "node server.js",
     "setup-db": "node setup-db.js",
-    "check-db": "node check-db.js"
+    "check-db": "node check-db.js",
+    "seed": "node seed-database.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

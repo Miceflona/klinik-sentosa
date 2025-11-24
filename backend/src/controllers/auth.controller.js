@@ -5,12 +5,20 @@ import db from '../models/Index.js';
 const { User, Patient, Staff } = db;
 
 export const registerPasien = async (req, res) => {
-  const { name, email, password, phone, address } = req.body;
+  const { name, email, password, phone, address, role } = req.body;
 
   try {
     // Validasi input
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'Nama, email, dan password harus diisi.' });
+    }
+
+    // Validasi role
+    const validRoles = ['admin', 'pasien', 'resepsionis', 'dokter', 'apoteker', 'kasir'];
+    const selectedRole = role || 'pasien';
+    
+    if (!validRoles.includes(selectedRole)) {
+      return res.status(400).json({ error: 'Role tidak valid.' });
     }
 
     // Check JWT_SECRET
@@ -29,10 +37,18 @@ export const registerPasien = async (req, res) => {
       password: hashed,
       phone,
       address,
-      role: 'pasien'
+      role: selectedRole
     });
 
-    await Patient.create({ user_id: user.id });
+    // Jika role adalah staff (dokter, apoteker, kasir, resepsionis), buat Staff profile
+    if (['dokter', 'apoteker', 'kasir', 'resepsionis', 'admin'].includes(selectedRole)) {
+      await Staff.create({ user_id: user.id });
+    }
+
+    // Jika role adalah pasien, buat Patient profile
+    if (selectedRole === 'pasien') {
+      await Patient.create({ user_id: user.id });
+    }
 
     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRES_IN || '7d'

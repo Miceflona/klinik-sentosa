@@ -13,7 +13,8 @@ export const patientService = {
   getProfile: () => api.get('/patients/me'),
   updateProfile: (data) => api.put('/patients/me', data),
   getVisits: () => api.get('/patients/me/visits'),
-  getQueueStatus: () => api.get('/patients/me/queue')
+  getQueueStatus: () => api.get('/patients/me/queue'),
+  registerExamination: (data) => api.post('/patients/register-examination', data)
 };
 
 // ==================== RECEPTIONIST ====================
@@ -30,7 +31,10 @@ export const doctorService = {
   getQueue: () => api.get('/doctor/queue'),
   getPatientRecords: (id) => api.get(`/doctor/patients/${id}/records`),
   createMedicalRecord: (data) => api.post('/doctor/records', data),
-  completeExamination: (id) => api.patch(`/doctor/records/${id}/complete`, {})
+  completeExamination: (id) => api.patch(`/doctor/records/${id}/complete`, {}),
+  getMyRecords: () => api.get('/doctor/records'),
+  getMyPrescriptions: () => api.get('/doctor/prescriptions'),
+  createPrescription: (data) => api.post('/doctor/prescriptions', data)
 };
 
 // ==================== PHARMACIST ====================
@@ -63,7 +67,11 @@ export const adminService = {
   getMedicines: () => api.get('/admin/medicines'),
   createMedicine: (data) => api.post('/admin/medicines', data),
   updateMedicine: (id, data) => api.put(`/admin/medicines/${id}`, data),
-  deleteMedicine: (id) => api.delete(`/admin/medicines/${id}`)
+  deleteMedicine: (id) => api.delete(`/admin/medicines/${id}`),
+  getAllPatients: () => api.get('/admin/patients'),
+  getPatientById: (id) => api.get(`/admin/patients/${id}`),
+  updatePatient: (id, data) => api.put(`/admin/patients/${id}`, data),
+  deletePatient: (id) => api.delete(`/admin/patients/${id}`)
 };
 
 // ==================== REPORTS ====================

@@ -83,3 +83,52 @@ export const getTransactionStats = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// Get completed patients (patients with completed examinations that don't have transaction yet)
+export const getCompletedPatients = async (req, res) => {
+  try {
+    // Get all medical records with status 'selesai'
+    const completedRecords = await MedicalRecord.findAll({
+      where: { status: 'selesai' },
+      include: [
+        {
+          model: Patient,
+          as: 'patient',
+          include: [{ model: User, as: 'user' }]
+        }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+
+    // Get all existing transactions
+    const existingTransactions = await Transaction.findAll({
+      attributes: ['medical_record_id']
+    });
+    const existingRecordIds = existingTransactions.map(t => t.medical_record_id);
+
+    // Filter out records that already have transactions
+    const patientsWithoutTransaction = completedRecords
+      .filter(record => !existingRecordIds.includes(record.id))
+      .map(record => ({
+        id: record.id,
+        medical_record_id: record.id,
+        patient_id: record.patient_id,
+        patient: record.patient,
+        patient_name: record.patient?.user?.name,
+        patient_email: record.patient?.user?.email,
+        medical_record: {
+          id: record.id,
+          diagnosis: record.diagnosis,
+          complaint: record.complaint,
+          createdAt: record.createdAt
+        },
+        diagnosis: record.diagnosis,
+        createdAt: record.createdAt
+      }));
+
+    res.json({ patients: patientsWithoutTransaction });
+  } catch (err) {
+    console.error('Error getting completed patients:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
