@@ -1,7 +1,7 @@
 // frontend/src/pages/patient/Profile.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext.jsx';
-import axios from 'axios';
+import { patientService } from '../../services/patientService.js';
 
 export default function Profile() {
   const { user, logout } = useAuth();
@@ -15,14 +15,41 @@ export default function Profile() {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await axios.get('/api/patients/me');
-        setFormData(res.data);
+        setLoading(true);
+        setError(null);
+        const res = await patientService.getProfile();
+        const profileData = res.data;
+        
+        // Handle nested user data structure
+        if (profileData.user) {
+          setFormData({
+            name: profileData.user.name || '',
+            email: profileData.user.email || '',
+            phone: profileData.user.phone || '',
+            address: profileData.user.address || '',
+            blood_type: profileData.blood_type || '',
+            emergency_contact: profileData.emergency_contact || ''
+          });
+        } else {
+          // Handle flat structure
+          setFormData({
+            name: profileData.name || '',
+            email: profileData.email || '',
+            phone: profileData.phone || '',
+            address: profileData.address || '',
+            blood_type: profileData.blood_type || '',
+            emergency_contact: profileData.emergency_contact || ''
+          });
+        }
       } catch (err) {
-        console.error(err);
+        console.error('Error fetching profile:', err);
+        setError(err.response?.data?.error || 'Gagal memuat profil');
       } finally {
         setLoading(false);
       }
@@ -38,22 +65,48 @@ export default function Profile() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
+    setError(null);
+    setSuccess(null);
 
     try {
-      await axios.put('/api/patients/me', formData);
-      alert('Profil berhasil diperbarui.');
+      await patientService.updateProfile(formData);
+      setSuccess('Profil berhasil diperbarui.');
     } catch (err) {
-      alert('Gagal memperbarui profil.');
+      console.error('Error updating profile:', err);
+      setError(err.response?.data?.error || 'Gagal memperbarui profil.');
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) return <div className="p-6">Memuat...</div>;
+  if (loading) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="text-center py-8">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <p className="mt-4 text-gray-600">Memuat profil...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Profil Saya</h1>
+    <div className="max-w-2xl mx-auto space-y-6">
+      <h1 className="text-2xl font-bold text-gray-800">Profil Saya</h1>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+          {success}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
         <div>

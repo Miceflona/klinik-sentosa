@@ -2,6 +2,11 @@ import { DataTypes } from 'sequelize';
 
 export default (sequelize, DataTypes) => {
   const Staff = sequelize.define('Staff', {
+    user_id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      allowNull: false
+    },
     specialization: {
       type: DataTypes.STRING(100)
     },

@@ -2,6 +2,11 @@ import { DataTypes } from 'sequelize';
 
 export default (sequelize, DataTypes) => {
   const Patient = sequelize.define('Patient', {
+    user_id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      allowNull: false
+    },
     medical_history: {
       type: DataTypes.TEXT
     },
