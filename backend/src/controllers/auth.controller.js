@@ -8,6 +8,17 @@ export const registerPasien = async (req, res) => {
   const { name, email, password, phone, address } = req.body;
 
   try {
+    // Validasi input
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Nama, email, dan password harus diisi.' });
+    }
+
+    // Check JWT_SECRET
+    if (!process.env.JWT_SECRET) {
+      console.error('❌ JWT_SECRET tidak ditemukan di environment variables');
+      return res.status(500).json({ error: 'Konfigurasi server tidak lengkap.' });
+    }
+
     const existing = await User.findOne({ where: { email } });
     if (existing) return res.status(400).json({ error: 'Email sudah terdaftar.' });
 
@@ -24,7 +35,7 @@ export const registerPasien = async (req, res) => {
     await Patient.create({ user_id: user.id });
 
     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES_IN
+      expiresIn: process.env.JWT_EXPIRES_IN || '7d'
     });
 
     res.status(201).json({
@@ -33,7 +44,13 @@ export const registerPasien = async (req, res) => {
       user: { id: user.id, name: user.name, email: user.email, role: user.role }
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('❌ Register error:', err);
+    console.error('   Error message:', err.message);
+    console.error('   Error stack:', err.stack);
+    res.status(500).json({ 
+      error: err.message || 'Terjadi kesalahan saat pendaftaran.',
+      details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
   }
 };
 

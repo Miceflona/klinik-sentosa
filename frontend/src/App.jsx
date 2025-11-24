@@ -6,6 +6,8 @@ import Register from './pages/auth/Register.jsx';
 
 // Pages per role
 import PatientDashboard from './pages/patient/Dashboard.jsx';
+import PatientProfile from './pages/patient/Profile.jsx';
+import PatientHistory from './pages/patient/History.jsx';
 import ReceptionistQueue from './pages/receptionist/TodayQueue.jsx';
 import DoctorQueue from './pages/doctor/PatientQueue.jsx';
 import PharmacistPrescriptions from './pages/pharmacy/PrescriptionList.jsx';
@@ -33,6 +35,16 @@ function App() {
           <Route path="/dashboard" element={
             <RoleGuard roles={['pasien']}>
               <PatientDashboard />
+            </RoleGuard>
+          } />
+          <Route path="/dashboard/profile" element={
+            <RoleGuard roles={['pasien']}>
+              <PatientProfile />
+            </RoleGuard>
+          } />
+          <Route path="/dashboard/history" element={
+            <RoleGuard roles={['pasien']}>
+              <PatientHistory />
             </RoleGuard>
           } />
 
