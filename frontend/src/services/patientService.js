@@ -14,6 +14,7 @@ export const patientService = {
   updateProfile: (data) => api.put('/patients/me', data),
   getVisits: () => api.get('/patients/me/visits'),
   getQueueStatus: () => api.get('/patients/me/queue'),
+  getAvailableDoctors: () => api.get('/patients/doctors'),
   registerExamination: (data) => api.post('/patients/register-examination', data)
 };
 

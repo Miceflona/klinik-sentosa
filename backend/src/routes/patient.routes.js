@@ -7,7 +7,8 @@ import {
   updatePatientProfile,
   getPatientVisits,
   getPatientQueueStatus,
-  registerExamination
+  registerExamination,
+  getAvailableDoctors
 } from '../controllers/patient.controller.js';
 
 const router = express.Router();
@@ -19,6 +20,7 @@ router.get('/me', getPatientProfile);
 router.put('/me', updatePatientProfile);
 router.get('/me/visits', getPatientVisits);
 router.get('/me/queue', getPatientQueueStatus);
+router.get('/doctors', getAvailableDoctors);
 router.post('/register-examination', registerExamination);
 
 export default router;

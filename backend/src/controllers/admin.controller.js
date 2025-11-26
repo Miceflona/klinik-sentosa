@@ -27,6 +27,14 @@ export const getAllUsers = async (req, res) => {
   try {
     const users = await User.findAll({
       attributes: { exclude: ['password'] },
+      include: [
+        {
+          model: Staff,
+          as: 'staffProfile',
+          attributes: ['specialization', 'license_number', 'is_active'],
+          required: false
+        }
+      ],
       order: [['name', 'ASC']]
     });
 
@@ -37,11 +45,21 @@ export const getAllUsers = async (req, res) => {
 };
 
 export const createUser = async (req, res) => {
-  const { name, email, password, phone, address, role } = req.body;
+  const { name, email, password, phone, address, role, specialization, license_number } = req.body;
 
   try {
     const existing = await User.findOne({ where: { email } });
     if (existing) return res.status(400).json({ error: 'Email sudah terdaftar.' });
+
+    // Validate doctor-specific fields
+    if (role === 'dokter') {
+      if (!specialization) {
+        return res.status(400).json({ error: 'Spesialisasi harus diisi untuk dokter.' });
+      }
+      if (!license_number) {
+        return res.status(400).json({ error: 'Nomor lisensi harus diisi untuk dokter.' });
+      }
+    }
 
     const hashed = await bcrypt.hash(password, 12);
     const user = await User.create({
@@ -55,7 +73,15 @@ export const createUser = async (req, res) => {
 
     // Jika role adalah staff/dokter, buat Staff profile
     if (['dokter', 'apoteker', 'kasir', 'resepsionis'].includes(role)) {
-      await Staff.create({ user_id: user.id });
+      const staffData = { user_id: user.id };
+      
+      // Add doctor-specific fields
+      if (role === 'dokter') {
+        staffData.specialization = specialization;
+        staffData.license_number = license_number;
+      }
+      
+      await Staff.create(staffData);
     }
 
     // Jika role adalah pasien, buat Patient profile

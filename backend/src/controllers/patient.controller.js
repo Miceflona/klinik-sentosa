@@ -3,6 +3,42 @@ import { Op } from 'sequelize';
 
 const { Patient, User, Queue, MedicalRecord, Staff, Prescription, PrescriptionItem, Medicine } = db;
 
+// Get list of available doctors
+export const getAvailableDoctors = async (req, res) => {
+  try {
+    const doctors = await Staff.findAll({
+      where: {
+        is_active: true
+      },
+      include: [{
+        model: User,
+        as: 'user',
+        where: {
+          role: 'dokter'
+        },
+        attributes: ['id', 'name', 'email', 'phone']
+      }],
+      attributes: ['user_id', 'specialization', 'license_number']
+    });
+
+    const formattedDoctors = doctors
+      .filter(staff => staff.user) // Filter out any staff without user
+      .map(staff => ({
+        id: staff.user_id,
+        name: staff.user.name,
+        email: staff.user.email,
+        phone: staff.user.phone,
+        specialization: staff.specialization || '-',
+        license_number: staff.license_number || '-'
+      }));
+
+    res.json({ doctors: formattedDoctors });
+  } catch (err) {
+    console.error('Error fetching doctors:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
 export const getPatientProfile = async (req, res) => {
   try {
     const patient = await Patient.findOne({
@@ -201,7 +237,7 @@ export const getPatientQueueStatus = async (req, res) => {
 
 // Register examination - pasien mendaftar untuk pemeriksaan
 export const registerExamination = async (req, res) => {
-  const { complaint, medical_history, blood_type, emergency_contact } = req.body;
+  const { complaint, medical_history, blood_type, emergency_contact, doctor_id } = req.body;
   const patientId = req.user.id;
 
   try {
@@ -257,10 +293,30 @@ export const registerExamination = async (req, res) => {
       status: 'menunggu'
     });
 
+    // Validate doctor_id if provided
+    if (doctor_id) {
+      const doctor = await Staff.findOne({
+        where: { user_id: doctor_id },
+        include: [{
+          model: User,
+          as: 'user',
+          where: { role: 'dokter' }
+        }]
+      });
+      
+      if (!doctor) {
+        return res.status(400).json({ error: 'Dokter yang dipilih tidak ditemukan atau tidak aktif.' });
+      }
+      
+      if (!doctor.is_active) {
+        return res.status(400).json({ error: 'Dokter yang dipilih tidak aktif.' });
+      }
+    }
+
     // Create medical record with complaint
     const medicalRecord = await MedicalRecord.create({
       patient_id: patientId,
-      doctor_id: null, // Will be set when doctor examines
+      doctor_id: doctor_id || null, // Set doctor_id if provided, otherwise null
       queue_id: queue.id,
       complaint: complaint,
       diagnosis: null,

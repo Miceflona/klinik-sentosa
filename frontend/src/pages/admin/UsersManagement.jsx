@@ -11,7 +11,9 @@ export default function UsersManagement() {
     email: '',
     role: 'resepsionis',
     phone: '',
-    address: ''
+    address: '',
+    specialization: '',
+    license_number: ''
   });
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -63,7 +65,9 @@ export default function UsersManagement() {
       email: user.email,
       role: user.role,
       phone: user.phone || '',
-      address: user.address || ''
+      address: user.address || '',
+      specialization: user.staffProfile?.specialization || '',
+      license_number: user.staffProfile?.license_number || ''
     });
     setEditingId(user.id);
   };
@@ -86,7 +90,9 @@ export default function UsersManagement() {
       email: '',
       role: 'resepsionis',
       phone: '',
-      address: ''
+      address: '',
+      specialization: '',
+      license_number: ''
     });
     setEditingId(null);
   };
@@ -171,6 +177,38 @@ export default function UsersManagement() {
               rows="2"
             />
           </div>
+          {form.role === 'dokter' && (
+            <>
+              <div>
+                <label className="block text-sm text-gray-700 mb-1">
+                  Spesialisasi *
+                </label>
+                <input
+                  type="text"
+                  name="specialization"
+                  value={form.specialization}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border rounded"
+                  placeholder="Contoh: Dokter Umum, Spesialis Anak, dll"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-700 mb-1">
+                  Nomor Lisensi *
+                </label>
+                <input
+                  type="text"
+                  name="license_number"
+                  value={form.license_number}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border rounded"
+                  placeholder="Contoh: STR-12345"
+                  required
+                />
+              </div>
+            </>
+          )}
           <div className="md:col-span-2 flex space-x-3 pt-2">
             <button
               type="submit"
@@ -221,6 +259,9 @@ export default function UsersManagement() {
                   }`}>
                     {user.role}
                   </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  {user.role === 'dokter' ? (user.staffProfile?.specialization || '-') : '-'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">{user.phone || '-'}</td>
                 <td className="px-6 py-4 whitespace-nowrap space-x-2">

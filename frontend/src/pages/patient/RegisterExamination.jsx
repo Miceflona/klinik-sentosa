@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import { useNavigate } from 'react-router-dom';
 import { patientService } from '../../services/patientService.js';
@@ -10,9 +10,29 @@ export default function RegisterExamination() {
     complaint: '',
     medical_history: '',
     blood_type: '',
-    emergency_contact: ''
+    emergency_contact: '',
+    doctor_id: ''
   });
+  const [doctors, setDoctors] = useState([]);
+  const [loadingDoctors, setLoadingDoctors] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    fetchDoctors();
+  }, []);
+
+  const fetchDoctors = async () => {
+    try {
+      setLoadingDoctors(true);
+      const res = await patientService.getAvailableDoctors();
+      setDoctors(Array.isArray(res.data) ? res.data : res.data?.doctors || []);
+    } catch (err) {
+      console.error('Error fetching doctors:', err);
+      alert(err.response?.data?.error || 'Gagal memuat daftar dokter.');
+    } finally {
+      setLoadingDoctors(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,7 +42,8 @@ export default function RegisterExamination() {
         complaint: formData.complaint,
         medical_history: formData.medical_history || null,
         blood_type: formData.blood_type || null,
-        emergency_contact: formData.emergency_contact || null
+        emergency_contact: formData.emergency_contact || null,
+        doctor_id: formData.doctor_id || null
       };
       
       const res = await patientService.registerExamination(data);
@@ -60,6 +81,38 @@ export default function RegisterExamination() {
                 <span className="ml-2 font-medium text-gray-800">{user?.email}</span>
               </div>
             </div>
+          </div>
+
+          {/* Pilih Dokter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Pilih Dokter (Opsional)
+            </label>
+            {loadingDoctors ? (
+              <div className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50">
+                <p className="text-sm text-gray-500">Memuat daftar dokter...</p>
+              </div>
+            ) : doctors.length === 0 ? (
+              <div className="w-full px-4 py-3 border border-yellow-300 rounded-lg bg-yellow-50">
+                <p className="text-sm text-yellow-700">Tidak ada dokter yang tersedia saat ini. Dokter akan ditugaskan secara otomatis.</p>
+              </div>
+            ) : (
+              <select
+                value={formData.doctor_id}
+                onChange={(e) => setFormData({ ...formData, doctor_id: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">Pilih Dokter (Biarkan kosong untuk ditugaskan otomatis)</option>
+                {doctors.map((doctor) => (
+                  <option key={doctor.id} value={doctor.id}>
+                    {doctor.name} {doctor.specialization && `- ${doctor.specialization}`}
+                  </option>
+                ))}
+              </select>
+            )}
+            <p className="text-xs text-gray-500 mt-1">
+              Pilih dokter yang ingin menangani pemeriksaan Anda, atau biarkan kosong untuk ditugaskan secara otomatis
+            </p>
           </div>
 
           {/* Keluhan */}
